@@ -1,0 +1,75 @@
+# =============================================================================
+# regions.example.yaml
+# Copy to regions.yaml and customise. Read by skills for region-specific
+# context: job boards, flagship buyers, regional dynamics, and language cues.
+# =============================================================================
+
+# Region presets --------------------------------------------------------------
+# Each region defines its own context. The active user's
+# user_profile.target_regions[] selects which presets are loaded.
+regions:
+  - name: "Demoland"
+    description: "Fictional reference region. Replace with your real target."
+    countries: ["Demoland"]
+    primary_cities: ["Northgate", "Riverbend", "Port Argent"]
+    languages_required: []          # languages commonly required by employers
+    languages_preferred: ["Federation Standard"]
+    flagship_buyers:                # major regional buyers / state-owned enterprises
+      - "Demoland National Energy"
+      - "Demoland Sovereign Wealth Fund"
+      - "Federation Infrastructure Authority"
+    job_boards:
+      - name: "DemolandJobs"
+        url_pattern: "site:demolandjobs.example"
+        method: "WebSearch"
+      - name: "Federation Talent"
+        url_pattern: "site:federationtalent.example"
+        method: "WebSearch + Playwright"
+    typical_dynamics:
+      - "Government approval cycles are non-negotiable; private cycles bend"
+      - "Local-content rules extend technical timelines"
+      - "Decision makers rarely appear on org charts"
+    work_authorisation_notes:
+      - "Demoland citizens / residents preferred"
+      - "Sponsorship available at scaleups but not most government contractors"
+    research_query_templates:
+      - "[Company] Demoland expansion <year>"
+      - "[Company] Northgate office <year>"
+      - "[Company] Federation partnership"
+
+# Add additional regions below following the same shape ----------------------
+# Example second region (commented out — uncomment and customise as needed):
+#  - name: "Eastern Federation"
+#    description: "Fictional second-tier region for cross-border roles"
+#    countries: ["Eastland", "Westland", "Centralia"]
+#    primary_cities: ["Capital City", "Trade Hub", "Industrial Zone"]
+#    languages_required: ["Federation Standard"]
+#    languages_preferred: []
+#    flagship_buyers:
+#      - "Federation Energy Authority"
+#      - "Centralia National Bank"
+#    job_boards:
+#      - name: "Eastland Careers"
+#        url_pattern: "site:eastland.example/jobs"
+#        method: "WebSearch"
+#    typical_dynamics:
+#      - "Trade-bloc regulations harmonising slowly"
+#      - "Talent commutes across borders for senior roles"
+#    work_authorisation_notes:
+#      - "EU-style intra-bloc work permits"
+#    research_query_templates:
+#      - "[Company] Federation expansion <year>"
+
+# Cross-region defaults -------------------------------------------------------
+# Applied when no region-specific override is found.
+defaults:
+  research_query_templates:
+    - "[Company] recent news <year>"
+    - "[Company] partnerships <year>"
+    - "[Company] strategy expansion <year>"
+  insight_categories:
+    - "Regulatory vs growth velocity"
+    - "Compliance mandates vs market timing"
+    - "Technical capability vs organisational readiness"
+    - "Marketing narrative vs operational reality"
+    - "Strategic positioning vs market reality"

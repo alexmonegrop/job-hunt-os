@@ -1,0 +1,71 @@
+# =============================================================================
+# industries.example.yaml
+# Copy to industries.yaml and customise. Read by skills (target_companies
+# industry dropdown, contact-population insight library) to know the canonical
+# industry vocabulary used in the database.
+# =============================================================================
+
+# Canonical industry list -----------------------------------------------------
+# Add/remove as your job hunt evolves. The database `target_companies.industry`
+# field uses these values as a select dropdown.
+industries:
+  - name: "AI/ML Enterprise Software"
+    keywords: ["artificial intelligence", "machine learning", "LLM", "foundation model", "AI platform", "MLOps"]
+    typical_roles: ["AI Product Manager", "ML Engineer", "AI Strategy Lead"]
+
+  - name: "Energy Tech"
+    keywords: ["renewable", "solar", "wind", "hydrogen", "battery storage", "grid", "decarbonisation"]
+    typical_roles: ["Program Manager", "Operations Director", "Technical Director"]
+
+  - name: "Robotics & Automation"
+    keywords: ["robotics", "autonomous", "industrial automation", "warehouse robotics", "drone"]
+    typical_roles: ["Engineering Manager", "Solutions Architect", "Deployment Lead"]
+
+  - name: "Industrial / Construction Tech"
+    keywords: ["ConTech", "construction tech", "industrial IoT", "asset management", "digital twin"]
+    typical_roles: ["Project Manager", "Operations Director", "Site Technology Lead"]
+
+  - name: "Data & Analytics"
+    keywords: ["data platform", "analytics", "business intelligence", "data warehouse", "data engineering"]
+    typical_roles: ["Data Product Manager", "Analytics Director", "Data Engineering Lead"]
+
+  - name: "Industry 4.0"
+    keywords: ["smart factory", "predictive maintenance", "digital manufacturing", "industrial AI"]
+    typical_roles: ["Operations Director", "Transformation Lead", "Industrial PM"]
+
+  - name: "3D / Spatial Computing"
+    keywords: ["digital twin", "VR", "AR", "spatial", "BIM", "3D simulation"]
+    typical_roles: ["Solutions Architect", "Technical PM", "Innovation Lead"]
+
+  - name: "ConTech"
+    keywords: ["construction technology", "BIM", "site automation", "construction analytics"]
+    typical_roles: ["Project Manager", "Innovation Director"]
+
+# Industry-specific insight seeds ---------------------------------------------
+# Used by cold-outreach and contact-population to seed counter-intuitive
+# insights for the 70-90 word message formula. Customise to your taste.
+insight_seeds:
+  "AI/ML Enterprise Software":
+    - "POCs succeed, but scaling fails at stakeholder multiplication"
+    - "Enterprise buyers want proven-elsewhere, not cutting-edge"
+    - "Adoption windows are fantasy in regulated industries"
+
+  "Energy Tech":
+    - "Carbon-credit purchasing follows compliance deadlines, not measurement capability"
+    - "Local-content requirements extend timelines 40-60% beyond technical complexity"
+    - "Marketing emphasises clean tech but revenue still lives with legacy assets"
+
+  "Robotics & Automation":
+    - "Hardware deployment is slow; the real moat is the operations playbook"
+    - "Customer success teams become accidental robotics engineers"
+    - "Site-by-site customisation is where margin disappears"
+
+  "Industrial / Construction Tech":
+    - "IT/OT convergence is a political problem, not a technical one"
+    - "Foreman-level adoption matters more than C-suite buy-in"
+    - "Pilot success rarely translates to fleet-wide rollout"
+
+  "Data & Analytics":
+    - "Most data platforms drown in unmaintained dashboards"
+    - "Self-service analytics is a myth at most enterprises"
+    - "Data-team headcount grows faster than insight delivery"

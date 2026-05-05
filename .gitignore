@@ -43,6 +43,11 @@ plans/SESSION-SUMMARY-*.md
 MEMORY.md
 memory/
 
+# --- User-specific config (gitignored — only the .example.yaml versions are tracked) ---
+config/*.yaml
+!config/*.example.yaml
+config/.nocodb-link-fields.yaml
+
 # --- Python ---
 __pycache__/
 *.py[cod]

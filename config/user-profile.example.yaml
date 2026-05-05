@@ -1,0 +1,129 @@
+# =============================================================================
+# user-profile.example.yaml
+# Copy to user-profile.yaml (gitignored) and customise for the active user.
+# Read by skills, rules, and tools at runtime to drive personalised behaviour.
+# =============================================================================
+
+# Identity --------------------------------------------------------------------
+name: "Jane Demo"
+slug: "jane-demo"          # used in directory paths and DB queries
+location: "Northgate, Demoland"
+linkedin: "https://linkedin.com/in/jane-demo"
+email: "jane@example.com"  # used in cover letters and form auto-fill
+
+# Target roles ----------------------------------------------------------------
+# What kinds of roles is this user pursuing? These map to the role_category
+# field on job_postings and drive resume template selection.
+target_roles:
+  - "Program Manager"
+  - "Senior Product Manager"
+  - "AI/ML Product Lead"
+  - "Director of Operations"
+  - "Digital Transformation Director"
+
+# Target regions --------------------------------------------------------------
+# Where the user is willing to work. Drives geographic prioritisation in the
+# contact-selection and job-search skills.
+home_region: "Demoland"
+target_regions:
+  - "Demoland"
+  - "Northgate metro"
+  - "Eastern Federation"
+target_cities:
+  - "Northgate"
+  - "Riverbend"
+  - "Port Argent"
+remote_preference: "Hybrid"   # Remote / Hybrid / On-site
+
+# Industries ------------------------------------------------------------------
+# Which sectors does the user want to target? Read from config/industries.yaml
+# for the canonical vocabulary; list the subset relevant here.
+target_industries:
+  - "AI/ML Enterprise Software"
+  - "Energy Tech"
+  - "Robotics & Automation"
+  - "Industrial / Construction Tech"
+  - "Data & Analytics"
+
+# Excluded companies ----------------------------------------------------------
+# BLOCKED list — apply to none of these without explicit user approval.
+# Typical reasons: existing networking relationship, former employer, personal.
+# See .claude/rules/06-application-standards.md "BLOCKED COMPANIES".
+excluded_companies:
+  # - name: "Globex Power"
+  #   reason: "Existing networking relationship via Bob Jones — coordinate with him first"
+  # - name: "Initech AI"
+  #   reason: "Former employer — sensitive relationship"
+
+# Languages -------------------------------------------------------------------
+languages:
+  - language: "English"
+    level: "Native"
+  - language: "Federation Standard"
+    level: "Conversational"
+
+# Credibility anchors ---------------------------------------------------------
+# Tags that link the user's background to companies / roles / industries.
+# Used by the cold-outreach and contact-population skills to pick the right
+# "Why Right Person" framing.
+credibility_anchors:
+  - tag: "ai_ml_founder"
+    description: "Founder/co-founder of an AI/ML startup"
+    evidence: "Co-founded Acme AI (Series A, 2024)"
+  - tag: "robotics_deployment"
+    description: "Deployed robotics in industrial settings"
+    evidence: "Deployed inspection robots across 3 refineries at Globex"
+  - tag: "digital_transformation"
+    description: "Led digital-transformation programs at Fortune 500"
+    evidence: "Led $25M DT program at Initech (2021-2023)"
+  - tag: "regional_expertise"
+    description: "Deep knowledge of target region operating context"
+    evidence: "5 years working in Demoland and Eastern Federation"
+
+# Value propositions ----------------------------------------------------------
+# Used by the resume-tailor skill in cover letters and `summary_override`.
+value_props:
+  - "Brings AI/ML founder mindset to enterprise transformation"
+  - "Bridges technical depth with regional operating expertise"
+  - "Delivers $10M+ programs in industrial / energy sectors"
+
+# Credentials -----------------------------------------------------------------
+# Certifications, degrees. Used by resume-tailor `skills_override` and form
+# auto-fill in the apply skill.
+credentials:
+  - name: "PMP"
+    issuer: "PMI"
+    date: "2019-04"
+  - name: "CSPO"
+    issuer: "Scrum Alliance"
+    date: "2020-08"
+  - name: "BSc, Industrial Engineering"
+    issuer: "Demoland State University"
+    date: "2008-05"
+
+# Work authorisation ----------------------------------------------------------
+work_authorisation:
+  status: "Demoland citizen"
+  sponsorship_required: false
+  willing_to_relocate_within: ["Demoland", "Eastern Federation"]
+
+# Resume variants -------------------------------------------------------------
+# Available templates and the default mapping from role category → variant.
+# resume-tailor reads this to pick the right base template.
+resume:
+  variants:
+    - name: "Innovation"
+      description: "Emphasises startup/founder, AI/ML, product innovation"
+      source_file: "applications/resumes/source/{slug}-resume-innovation.docx"
+    - name: "Delivery"
+      description: "Emphasises program management, large-scale execution"
+      source_file: "applications/resumes/source/{slug}-resume-delivery.docx"
+    - name: "Generic"
+      description: "Balanced version for general applications"
+      source_file: "applications/resumes/source/{slug}-resume-generic.docx"
+  template_mapping:
+    "Program Manager": "Delivery"
+    "Senior Product Manager": "Delivery"
+    "AI/ML Product Lead": "Innovation"
+    "Director of Operations": "Delivery"
+    "Digital Transformation Director": "Generic"

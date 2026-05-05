@@ -1,0 +1,149 @@
+# =============================================================================
+# fit-score.example.yaml
+# Copy to fit-score.yaml and customise. Read by the job-search skill (raw +
+# adjusted scoring) and apply skill (gating).
+# See .claude/rules/06-application-standards.md.
+# =============================================================================
+
+# Raw criteria — 0-10 total ---------------------------------------------------
+raw_criteria:
+  - name: "role_alignment"
+    points_max: 3
+    description: "Posting role matches user_profile.target_roles[]"
+    rubric:
+      0: "Role is unrelated to any target role"
+      1: "Role is loosely adjacent (e.g., generic management)"
+      2: "Role aligns with one target role"
+      3: "Role aligns with the highest-priority target role"
+
+  - name: "region_expansion_signal"
+    points_max: 2
+    description: "Company is actively expanding in user_profile.target_regions[]"
+    rubric:
+      0: "No regional expansion signal"
+      1: "Some regional presence but not actively expanding"
+      2: "Active expansion: hiring, office openings, partnerships"
+
+  - name: "industry_match"
+    points_max: 2
+    description: "Posting's industry is in user_profile.target_industries[]"
+    rubric:
+      0: "Industry not in target list"
+      1: "Adjacent / partial match"
+      2: "Direct match"
+
+  - name: "seniority_fit"
+    points_max: 1
+    description: "Senior / Director / VP — not junior, not C-suite at mega-corp"
+    rubric:
+      0: "Mismatch (too junior or too senior)"
+      1: "Correct seniority band"
+
+  - name: "geography_match"
+    points_max: 1
+    description: "Based in target region or remote-friendly"
+    rubric:
+      0: "Wrong region, no remote option"
+      1: "Target region, or remote-friendly with timezone overlap"
+
+  - name: "existing_contact_bonus"
+    points_max: 1
+    description: "Company already has a record in target_companies"
+    rubric:
+      0: "No existing record"
+      1: "Existing record (warm-application opportunity)"
+
+# Penalties — subtracted from raw score (after raw scoring)
+# Customise per the user's gap-analysis.yaml. The agent reads these values to
+# adjust the score; do not hardcode them in skills/rules.
+penalties:
+  - condition: "Pure B2C consumer product (no B2B equivalent)"
+    points: -3
+    rationale: "Hard gap if user lacks B2C experience"
+    applies_when: "Posting describes a B2C / consumer product without B2B angle"
+
+  - condition: "Top-tier consulting at Manager+ level"
+    points: -2
+    rationale: "Hard gap if user lacks consulting-firm tenure"
+    applies_when: "Posting is at McKinsey / Bain / BCG / Big Four at Manager+"
+
+  - condition: "CS / Engineering degree explicitly required"
+    points: -2
+    rationale: "Hard gap if user lacks degree"
+    applies_when: "Posting says 'BSc/MSc in Computer Science required'"
+
+  - condition: "Required language user does not speak"
+    points: -3
+    rationale: "Hard gap"
+    applies_when: "Posting requires fluency in a language not in user_profile.languages[]"
+
+  - condition: "Same language as 'nice to have'"
+    points: -1
+    rationale: "Soft gap"
+    applies_when: "Language is preferred but not required"
+
+  - condition: "MBA explicitly required"
+    points: -2
+    rationale: "Soft gap if user lacks MBA"
+    applies_when: "Posting says 'MBA required'"
+
+  - condition: "MBA preferred"
+    points: -1
+    rationale: "Soft gap"
+    applies_when: "Posting says 'MBA preferred / nice to have'"
+
+# Bonuses — added to raw score (after raw scoring)
+bonuses:
+  - condition: "Native to target region or building regional practice"
+    points: +1
+    rationale: "Sweet spot for users with regional expertise"
+    applies_when: "Company HQ in target region, OR explicitly building regional team"
+
+  - condition: "Role values breadth over domain depth"
+    points: +1
+    rationale: "Sweet spot for users with multi-industry background"
+    applies_when: "Posting mentions breadth, multi-industry, T-shaped"
+
+  - condition: "Startup / scaleup (<500 employees)"
+    points: +1
+    rationale: "Sweet spot for users with founder mindset"
+    applies_when: "Company size <500 employees"
+
+  - condition: "Independent consulting engagement model"
+    points: +1
+    rationale: "Matches consulting tenure if user has it"
+    applies_when: "Posting describes consultative / advisory work"
+
+# Thresholds — what to do at each adjusted-score band -------------------------
+thresholds:
+  full:
+    min: 7
+    description: "Full protocol — tailored resume + cover letter + portal-first"
+    actions:
+      - "Run /resume-tailor"
+      - "Draft cover letter"
+      - "Apply via company portal first; Easy Apply only as fallback"
+      - "Create application + interaction records"
+
+  longshot:
+    min: 5
+    max: 6
+    description: "Longshot protocol — Easy Apply only, generic template, no cover letter"
+    actions:
+      - "Use closest matching generic template"
+      - "Easy Apply only (no portal hunt)"
+      - "Tag 'LONGSHOT' in application notes"
+      - "No follow-up unless employer responds"
+
+  skip:
+    min: 3
+    max: 4
+    description: "Skip unless user explicitly overrides"
+    actions:
+      - "Present to user with reasoning"
+      - "Do not apply by default"
+
+  auto_skip:
+    max: 2
+    description: "Auto-skip — never apply, no DB record needed"
+    actions: []

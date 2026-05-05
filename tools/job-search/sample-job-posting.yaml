@@ -1,0 +1,48 @@
+# =============================================================================
+# Sample job-posting YAML - illustrative example using fictional data.
+# Copy to applications/jobs/{company}-{job-slug}.yaml when capturing a real
+# posting. Schema matches what tools/resume-tailor/tailor-resume.py expects.
+# =============================================================================
+
+job_title: "Senior Program Manager, Grid Interconnect"
+company: "Solaris Demoland"
+location: "Northgate, Demoland"
+remote_status: "Hybrid"
+job_url: "https://example.com/job/12345"
+board: "Company Website"
+posted_date: "2026-04-15"
+discovered_date: "2026-04-16"
+role_category: "PM"   # PM / Product / AI-DT / Operations
+
+# Requirements extracted from the job posting (must-haves; score 3 each).
+requirements:
+  - "10+ years program management experience"
+  - "PMP certification"
+  - "Experience with large-scale energy transformation"
+  - "Stakeholder management with regulators and vendors"
+  - "Multi-site delivery across utilities"
+  - "Budget management ($20M+)"
+  - "Agile methodology experience"
+
+# Nice-to-haves (score 2 each).
+nice_to_haves:
+  - "AI/ML or IoT project experience"
+  - "Renewable energy domain"
+  - "Team leadership (5+ reports)"
+  - "Digital twin / predictive maintenance experience"
+  - "Startup or industrial-tech founder background"
+
+# Industry / domain keywords (score 1 each).
+industry_keywords:
+  - "energy"
+  - "renewable"
+  - "grid"
+  - "industrial"
+  - "interconnect"
+  - "utility"
+  - "transmission"
+
+# For cover-letter generation (consumed by the resume-tailor / apply skills).
+company_news: "Solaris Demoland announced $200M Northgate solar build-out in March 2026"
+company_focus: "Grid interconnect and renewable transmission programs"
+why_interested: "Multi-stakeholder delivery in regional energy at the build-out moment"

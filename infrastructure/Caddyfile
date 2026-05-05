@@ -1,0 +1,14 @@
+# =============================================================================
+# Caddyfile — optional reverse proxy with auto-HTTPS for a public-facing host.
+#
+# Only used when running `docker compose --profile caddy up -d`.
+# For a single-machine local setup, you don't need this — connect directly
+# to http://localhost:8080.
+#
+# Set NOCODB_DOMAIN in infrastructure/.env (e.g., db.your-domain.example)
+# before bringing the caddy profile up.
+# =============================================================================
+
+{$NOCODB_DOMAIN} {
+	reverse_proxy nocodb:8080
+}

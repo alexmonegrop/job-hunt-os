@@ -1,0 +1,78 @@
+# =============================================================================
+# job-hunt-os — local Docker Compose stack
+#
+# Default profile: postgres + nocodb (the data backend).
+# Optional profile: caddy (reverse proxy, only if you want a custom domain).
+#
+# Usage:
+#   cd infrastructure
+#   cp .env.example .env             # then edit POSTGRES_PASSWORD
+#   docker compose up -d             # postgres + nocodb only
+#   docker compose --profile caddy up -d   # add reverse proxy
+#
+# Then visit http://localhost:8080 to set up your NocoDB admin user.
+# =============================================================================
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jobhunt
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: jobhunt
+    ports:
+      # Expose postgres locally only — bind to 127.0.0.1 to keep it off the LAN.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobhunt"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nocodb:
+    image: nocodb/nocodb:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # NocoDB stores its own metadata (users, bases, views) in a separate DB
+      # called `nocodb`, created by init-db/01-create-databases.sql.
+      NC_DB: "pg://postgres:5432?u=jobhunt&p=${POSTGRES_PASSWORD}&d=nocodb"
+    ports:
+      - "${NOCODB_HOST_PORT:-8080}:8080"
+    volumes:
+      - nocodb_data:/usr/app/data
+
+  # ---------------------------------------------------------------------------
+  # Optional: Caddy reverse proxy with auto-HTTPS.
+  # Only useful if you're running this on a public-facing host with a real
+  # domain (e.g., db.your-domain.example).
+  # Disabled by default — enable with `--profile caddy`.
+  # ---------------------------------------------------------------------------
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    profiles: ["caddy"]
+    depends_on:
+      - nocodb
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      NOCODB_DOMAIN: ${NOCODB_DOMAIN:-db.localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  nocodb_data:
+  caddy_data:
+  caddy_config:

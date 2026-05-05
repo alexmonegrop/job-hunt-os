@@ -1,0 +1,146 @@
+# =============================================================================
+# master-experience.template.yaml
+# Annotated template for the per-user master-experience YAML.
+# Copy this to applications/resumes/data/{your-slug}/master-experience.yaml and
+# fill in with your real data. NEVER commit your real master-experience.yaml.
+#
+# This is the SINGLE SOURCE OF TRUTH for your work experience. The resume-tailor
+# tool reads it, scores each achievement against a job posting, and selects the
+# top-scoring achievements per role to include in tailored resumes.
+# =============================================================================
+
+# Top-level metadata about the user (cross-checked against config/user-profile.yaml).
+metadata:
+  user_slug: "your-slug"           # MUST match config/user-profile.yaml `slug`
+  full_name: "Your Full Name"
+  preferred_name: "Your Preferred Name"
+  location: "City, Country"
+  email: "you@example.com"
+  phone: "+00 0000 0000 000"
+  linkedin: "https://linkedin.com/in/your-handle"
+  website: "https://your-website.example"
+
+# Summary variants — different angles for different role types.
+# resume-tailor selects one based on the role_category (or uses summary_override
+# from the job YAML for a fully tailored version).
+summaries:
+  - variant: "innovation"
+    text: |
+      <2-3 sentences emphasising AI/ML, founder mindset, product innovation, design thinking>
+  - variant: "delivery"
+    text: |
+      <2-3 sentences emphasising program management, large-scale delivery, stakeholder mgmt>
+  - variant: "generic"
+    text: |
+      <2-3 balanced sentences for general use>
+
+# Skills line — overridable per job via skills_override in the job YAML.
+# Format: hard tools first (60%+), then methodologies/certifications.
+default_skills_line: "Power BI | JIRA | SAP | SQL | AWS | Python | Docker | Agile/Scrum | PMP, CSPO Certified"
+
+# Work experience — each role with its achievement bullets.
+# Achievements are scored against job-posting requirements; top-scoring bullets
+# are selected for the tailored resume.
+experience:
+  - id: "co-1"                     # short ID for cross-references
+    company: "Most Recent Company"
+    title: "Senior Program Manager"
+    location: "City, Country"
+    start_date: "2023-01"
+    end_date: "Present"            # or YYYY-MM
+    title_overrides:               # optional alternative titles by role variant
+      consulting: "Senior Management Consultant"
+    summary: "1-2 line description of role scope"
+    achievements:
+      - id: "co-1-01"              # company-prefix + number
+        text: |
+          Led $X million digital transformation program across 5 business units,
+          delivering [outcome] in [timeframe] with [%] budget deviation.
+        priority: 10               # 1-10; 10 = flagship, 5 = filler
+        tags:                      # filter tags for variant selection
+          - delivery
+          - digital_transformation
+          - program_management
+        metrics:                   # extracted numbers — used for keyword matching
+          - "$X million"
+          - "5 business units"
+          - "[%] budget deviation"
+        functional_areas:
+          - "stakeholder management"
+          - "program management"
+        better_for: ["delivery", "generic"]   # variants this bullet works well in
+        avoid_for: ["innovation"]              # variants this bullet doesn't fit
+        engagement_type: "full_time"           # full_time | consulting | contract
+
+      - id: "co-1-02"
+        text: |
+          <Next bullet — keep specific, metric-rich, action verb first>
+        priority: 8
+        tags: [ai, product, founder]
+        metrics: []
+        functional_areas: ["product strategy"]
+        better_for: ["innovation"]
+        avoid_for: []
+
+  - id: "co-2"
+    company: "Previous Company"
+    title: "Program Manager"
+    location: "City, Country"
+    start_date: "2020-06"
+    end_date: "2022-12"
+    summary: "..."
+    achievements:
+      - id: "co-2-01"
+        text: |
+          ...
+        priority: 9
+        tags: [...]
+        metrics: [...]
+        functional_areas: [...]
+
+  # Add as many experience entries as needed.
+
+# Education
+education:
+  - degree: "BSc, Industrial Engineering"
+    institution: "University Name"
+    location: "City, Country"
+    graduation_date: "2008-05"
+    notes: "Honours / GPA / relevant coursework if helpful"
+
+# Certifications
+certifications:
+  - name: "PMP"
+    issuer: "Project Management Institute"
+    date: "2019-04"
+    id: "PMP-XXXXXX"           # optional
+  - name: "CSPO"
+    issuer: "Scrum Alliance"
+    date: "2020-08"
+
+# Languages — used by the apply skill for form auto-fill and by the fit-score
+# matcher (penalises postings that require a language you don't speak).
+languages:
+  - language: "English"
+    level: "Native"
+  - language: "French"
+    level: "Conversational"
+
+# Optional: career-break section (useful for honest gaps).
+career_breaks:
+  - period: "2019-2020"
+    description: "Sabbatical / family / health / other"
+
+# =============================================================================
+# Tagging vocabulary — use these tags consistently to make filtering work well.
+# Add your own; just be consistent.
+#
+# Industry: ai, ml, robotics, energy, fintech, healthtech, edtech, contech,
+#           industrial, government, b2b, b2c
+# Function: program_management, product_management, operations, strategy,
+#           digital_transformation, product, engineering, sales, consulting
+# Skill:    sql, python, aws, docker, llm, rag, vector_search, design_thinking,
+#           agile, scrum, prince2, lean, six_sigma
+# Region:   <add tags from config/user-profile.yaml target_regions[]>
+# Type:     full_time, consulting, contract, founder, advisor
+# =============================================================================

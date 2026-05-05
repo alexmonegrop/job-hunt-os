@@ -1,0 +1,58 @@
+# =============================================================================
+# Job posting YAML — annotated template.
+# Copy this file to applications/jobs/{company}-{job-slug}.yaml and fill in.
+# Used as input to tools/resume-tailor/tailor-resume.py.
+# =============================================================================
+
+# --- Basic info ---
+company: "Company Name"
+job_title: "Senior Program Manager, AI Initiatives"
+job_url: "https://..."           # link to the original posting
+location: "City, Country"
+posted_date: "YYYY-MM-DD"
+
+# --- Tailoring controls ---
+# role_category drives template + scoring. One of:
+#   PM, Product, AI_DT (or AI-DT), Operations
+role_category: "PM"
+
+# template (optional) — variant of summary/title to pick if role_category
+# isn't recognised. One of: innovation, delivery, generic, pm, product,
+# ai_dt, operations. Defaults to "generic".
+template: "delivery"
+
+# --- Job content (used for keyword scoring) ---
+requirements:                    # must-haves; matches score 3 each (max 9)
+  - "10+ years program management experience"
+  - "PMP certification"
+  - "Experience with large-scale digital transformation"
+  - "Stakeholder management at C-suite level"
+
+nice_to_haves:                   # nice-to-haves; matches score 2 each (max 4)
+  - "AI/ML project experience"
+  - "Regional / multi-country scope"
+  - "Team leadership (5+ reports)"
+
+industry_keywords:               # domain terms; matches score 1 each (max 2)
+  - "energy"
+  - "renewable"
+  - "industrial"
+  - "AI"
+
+# --- Optional overrides (set during the tailoring iteration) ---
+# These are populated by the AI agent during the bullet-rewriting step
+# (Step 3 of operating-procedures/RESUME-TAILORING-PROCEDURE-v1.md).
+# When set, they replace the auto-selected content.
+
+# summary_override: "Custom summary echoing JD themes."
+# title_override: "Senior Program Manager, AI Initiatives"
+# skills_override: "Technical Skills: JIRA | Power BI | SQL | AWS | Python | Agile/Scrum | PMP, CSPO Certified"
+
+# text_overrides:
+#   co1-01: "Custom rewrite of bullet co1-01 mirroring JD language..."
+#   co1-02: "Custom rewrite of bullet co1-02..."
+
+# --- Bullet selection controls (optional) ---
+# override_only: true             # if true, only use achievements listed in text_overrides
+# min_bullets: 22                 # override the global min_bullets target
+# max_per_role: 4                 # override the per-company-section max

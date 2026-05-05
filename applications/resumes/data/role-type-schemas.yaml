@@ -1,0 +1,196 @@
+# =============================================================================
+# role-type-schemas.yaml
+# Defines include / exclude / reframe rules per role category, used by
+# tools/resume-tailor/tailor-resume.py for role-aware achievement scoring.
+#
+# This is the GLOBAL fallback. Per-user overrides go to:
+#   applications/resumes/data/{user-slug}/role-type-schemas.yaml
+#
+# After /onboard-user runs, the user's gap-analysis.yaml will populate
+# achievement_ids_prefer and achievement_ids_deprioritize per role category.
+# This default version ships with empty lists -- the tool falls back to
+# variant-based selection when no preference / deprioritise IDs are set.
+# =============================================================================
+
+role_categories:
+  PM:
+    label: "Project / Program Manager"
+    functional_areas_include:
+      - program_management
+      - budget_management
+      - risk_management
+      - stakeholder_management
+      - scheduling
+      - governance
+      - change_management
+      - vendor_management
+      - delivery
+      - pmo
+      - critical_path
+    functional_areas_exclude:
+      - sales
+      - gtm
+      - fundraising
+      - marketing
+      - market_creation
+    achievement_ids_prefer: []      # populate from your gap-analysis.yaml
+    achievement_ids_deprioritize: []
+    title_format: "Program Manager"
+    summary_key: "pm"
+    skills_filter:
+      - program_management
+      - operations
+      - delivery
+      - agile
+      - consulting
+      - leadership
+      - reporting
+      - process_design
+    keywords_boost:
+      - "PMP"
+      - "PMO"
+      - "budget management"
+      - "risk management"
+      - "stakeholder management"
+      - "critical path"
+      - "governance"
+      - "milestone"
+      - "scheduling"
+      - "scope management"
+      - "earned value"
+      - "RACI"
+
+  Product:
+    label: "Product Manager"
+    functional_areas_include:
+      - product_management
+      - customer_discovery
+      - roadmap
+      - backlog
+      - user_research
+      - data_driven
+      - cross_functional_leadership
+      - mvp
+      - uat
+      - feedback_loops
+    functional_areas_exclude:
+      - pmo_governance
+      - budget_variance
+      - vendor_management
+      - field_services
+      - erp
+    achievement_ids_prefer: []
+    achievement_ids_deprioritize: []
+    title_format: "Product Manager"
+    summary_key: "product"
+    skills_filter:
+      - ai_product
+      - product
+      - innovation
+      - agile
+      - ux
+      - design
+      - rapid_prototyping
+      - growth
+      - marketing
+      - customer_success
+    keywords_boost:
+      - "product roadmap"
+      - "customer discovery"
+      - "backlog"
+      - "user research"
+      - "MVP"
+      - "product strategy"
+      - "cross-functional"
+      - "agile"
+      - "scrum"
+      - "UAT"
+
+  AI_DT:
+    label: "AI & Digital Transformation"
+    functional_areas_include:
+      - ai_ml
+      - llm
+      - computer_vision
+      - digital_transformation
+      - robotics
+      - technical_architecture
+      - production_ai
+      - rag
+      - iot
+      - data_science
+    functional_areas_exclude:
+      - pure_sales
+      - generic_consulting
+      - field_services
+      - erp
+    achievement_ids_prefer: []
+    achievement_ids_deprioritize: []
+    title_format: "AI Product & Technical Leader"
+    summary_key: "ai_dt"
+    skills_filter:
+      - ai_product
+      - innovation
+      - digital_transformation
+      - robotics
+      - industry_4_0
+      - data_science
+      - simulation
+      - automation
+      - energy
+    keywords_boost:
+      - "LLM"
+      - "RAG"
+      - "TensorFlow"
+      - "computer vision"
+      - "machine learning"
+      - "AI deployment"
+      - "digital transformation"
+      - "robotics"
+      - "IoT"
+      - "digital twin"
+
+  Operations:
+    label: "Operations & Delivery"
+    functional_areas_include:
+      - operations
+      - p_and_l
+      - team_building
+      - process_optimization
+      - governance
+      - transformation
+      - vendor_management
+      - change_management
+      - cost_reduction
+      - kpi
+    functional_areas_exclude:
+      - product_roadmap
+      - user_research
+      - vr_ar_hardware
+      - fundraising
+      - market_creation
+    achievement_ids_prefer: []
+    achievement_ids_deprioritize: []
+    title_format: "Operations & Delivery Leader"
+    summary_key: "operations"
+    skills_filter:
+      - operations
+      - program_management
+      - delivery
+      - automation
+      - consulting
+      - transformation
+      - leadership
+      - reporting
+      - process_design
+    keywords_boost:
+      - "P&L"
+      - "operations"
+      - "cost reduction"
+      - "process optimization"
+      - "team building"
+      - "KPI"
+      - "governance"
+      - "change management"
+      - "vendor management"
+      - "transformation"

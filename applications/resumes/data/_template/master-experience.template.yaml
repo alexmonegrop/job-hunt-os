@@ -4,132 +4,167 @@
 # Copy this to applications/resumes/data/{your-slug}/master-experience.yaml and
 # fill in with your real data. NEVER commit your real master-experience.yaml.
 #
-# This is the SINGLE SOURCE OF TRUTH for your work experience. The resume-tailor
-# tool reads it, scores each achievement against a job posting, and selects the
-# top-scoring achievements per role to include in tailored resumes.
+# This is the SINGLE SOURCE OF TRUTH for your work experience. The
+# resume-tailor tool reads it, scores each achievement against a job posting,
+# and selects the top-scoring achievements per role to include in the
+# tailored resume.
+#
+# See applications/resumes/data/jane-demo/master-experience.yaml for a
+# fully-populated example using fictional data.
 # =============================================================================
 
-# Top-level metadata about the user (cross-checked against config/user-profile.yaml).
-metadata:
-  user_slug: "your-slug"           # MUST match config/user-profile.yaml `slug`
+contact:
   full_name: "Your Full Name"
-  preferred_name: "Your Preferred Name"
   location: "City, Country"
+  phone: "+00 0000 0000"
   email: "you@example.com"
-  phone: "+00 0000 0000 000"
-  linkedin: "https://linkedin.com/in/your-handle"
-  website: "https://your-website.example"
+  linkedin: "linkedin.com/in/your-handle"
+  availability: "Available immediately"
+  # nationality: "..."     # only include if relevant to target market
+  # visa_status: "..."     # only include if relevant to target market
 
-# Summary variants — different angles for different role types.
-# resume-tailor selects one based on the role_category (or uses summary_override
-# from the job YAML for a fully tailored version).
-summaries:
-  - variant: "innovation"
-    text: |
-      <2-3 sentences emphasising AI/ML, founder mindset, product innovation, design thinking>
-  - variant: "delivery"
-    text: |
-      <2-3 sentences emphasising program management, large-scale delivery, stakeholder mgmt>
-  - variant: "generic"
-    text: |
+# summary_variants — each variant has a `title` (resume header) and `text`
+# (summary paragraph). The resume-tailor tool selects one based on the
+# job's role_category, falling back to the `template` field if no role
+# category is set.
+#
+# Required keys: innovation, delivery, generic, pm, product, ai_dt, operations.
+# (You can omit ones that don't apply — the tool falls back to `generic`.)
+summary_variants:
+  innovation:
+    title: "<emphasises startup/founder, AI/ML, product innovation>"
+    text: >
+      <2-3 sentences emphasising entrepreneurship, product building,
+      AI/ML innovation>
+    best_for:
+      - innovation
+      - founder
+  delivery:
+    title: "<emphasises program management, large-scale delivery>"
+    text: >
+      <2-3 sentences emphasising program/project management, execution,
+      stakeholder mgmt>
+    best_for:
+      - program_management
+      - delivery
+  generic:
+    title: "<balanced default>"
+    text: >
       <2-3 balanced sentences for general use>
+    best_for:
+      - mixed_roles
+  pm:
+    title: "<role-specific PM title>"
+    text: >
+      <PM-specific summary>
+  product:
+    title: "<role-specific Product title>"
+    text: >
+      <Product-specific summary>
+  ai_dt:
+    title: "<role-specific AI / Digital Transformation title>"
+    text: >
+      <AI/DT-specific summary>
+  operations:
+    title: "<role-specific Operations title>"
+    text: >
+      <Operations-specific summary>
 
-# Skills line — overridable per job via skills_override in the job YAML.
-# Format: hard tools first (60%+), then methodologies/certifications.
-default_skills_line: "Power BI | JIRA | SAP | SQL | AWS | Python | Docker | Agile/Scrum | PMP, CSPO Certified"
-
-# Work experience — each role with its achievement bullets.
-# Achievements are scored against job-posting requirements; top-scoring bullets
-# are selected for the tailored resume.
+# experience — list of jobs in reverse chronological order.
 experience:
-  - id: "co-1"                     # short ID for cross-references
-    company: "Most Recent Company"
-    title: "Senior Program Manager"
+  - company: "Most Recent Company"
+    # title_variants — different title strings per role variant.
+    # The tool picks the variant matching the job's role_category.
+    # Use the same title for all variants if you don't need to vary.
+    title_variants:
+      pm: "Senior Program Manager"
+      delivery: "Senior Program Manager"
+      ai_dt: "Senior Program Manager, AI/Digital"
+      product: "Senior Product Manager"
+      operations: "Senior Operations Manager"
+      generic: "Senior Program Manager"
+      innovation: "Senior Program Manager"
+      all: "Senior Program Manager"
     location: "City, Country"
-    start_date: "2023-01"
-    end_date: "Present"            # or YYYY-MM
-    title_overrides:               # optional alternative titles by role variant
-      consulting: "Senior Management Consultant"
-    summary: "1-2 line description of role scope"
+    dates: "YYYY-MM to Present"
+    description: "1-2 line description of role scope"
+    # description_variants:    # optional — different role description per variant
+    #   pm: "..."
+    #   product: "..."
     achievements:
-      - id: "co-1-01"              # company-prefix + number
+      - id: "co1-01"           # short stable ID (used in role-type-schemas + text_overrides)
         text: |
-          Led $X million digital transformation program across 5 business units,
-          delivering [outcome] in [timeframe] with [%] budget deviation.
-        priority: 10               # 1-10; 10 = flagship, 5 = filler
-        tags:                      # filter tags for variant selection
+          Led $X million digital transformation program across 5 business
+          units, delivering [outcome] in [timeframe] with [%] budget deviation.
+        priority: 10           # 1-10; 10 = flagship, 5 = filler
+        tags:                  # filter tags
           - delivery
           - digital_transformation
           - program_management
-        metrics:                   # extracted numbers — used for keyword matching
+        metrics:               # extracted numbers (used for keyword matching)
           - "$X million"
           - "5 business units"
           - "[%] budget deviation"
-        functional_areas:
-          - "stakeholder management"
-          - "program management"
-        better_for: ["delivery", "generic"]   # variants this bullet works well in
-        avoid_for: ["innovation"]              # variants this bullet doesn't fit
-        engagement_type: "full_time"           # full_time | consulting | contract
-
-      - id: "co-1-02"
+        functional_areas:      # used for role-type filtering
+          - stakeholder_management
+          - program_management
+        better_for: [PM, Operations]   # role categories this bullet works well for
+        avoid_for: []                  # role categories this bullet hurts in
+        variants: [delivery, generic, pm, operations]   # which summary variants to include in
+      - id: "co1-02"
         text: |
           <Next bullet — keep specific, metric-rich, action verb first>
         priority: 8
-        tags: [ai, product, founder]
-        metrics: []
-        functional_areas: ["product strategy"]
-        better_for: ["innovation"]
+        tags: [...]
+        metrics: [...]
+        functional_areas: [...]
+        better_for: [...]
         avoid_for: []
+        variants: [...]
 
-  - id: "co-2"
-    company: "Previous Company"
-    title: "Program Manager"
+  - company: "Previous Company"
+    title_variants:
+      all: "Program Manager"
     location: "City, Country"
-    start_date: "2020-06"
-    end_date: "2022-12"
-    summary: "..."
+    dates: "YYYY-MM to YYYY-MM"
+    description: "..."
     achievements:
-      - id: "co-2-01"
-        text: |
-          ...
+      - id: "co2-01"
+        text: "..."
         priority: 9
         tags: [...]
         metrics: [...]
         functional_areas: [...]
+        better_for: [...]
+        avoid_for: []
+        variants: [...]
 
   # Add as many experience entries as needed.
+  # Special: a Career Break entry (no achievements):
+  # - company: "Career Break"
+  #   title_variants: {}
+  #   location: ""
+  #   dates: "YYYY-MM to YYYY-MM"
+  #   description: "Sabbatical / family / health / other"
+  #   achievements: []
 
-# Education
 education:
   - degree: "BSc, Industrial Engineering"
     institution: "University Name"
     location: "City, Country"
-    graduation_date: "2008-05"
-    notes: "Honours / GPA / relevant coursework if helpful"
+    date: "YYYY-MM"
 
-# Certifications
 certifications:
   - name: "PMP"
     issuer: "Project Management Institute"
-    date: "2019-04"
-    id: "PMP-XXXXXX"           # optional
+    location: "Online"
+    date: "YYYY-MM"
+    variants: [delivery, generic, pm, operations, all]   # which variants to include this cert in
   - name: "CSPO"
     issuer: "Scrum Alliance"
-    date: "2020-08"
-
-# Languages — used by the apply skill for form auto-fill and by the fit-score
-# matcher (penalises postings that require a language you don't speak).
-languages:
-  - language: "English"
-    level: "Native"
-  - language: "French"
-    level: "Conversational"
-
-# Optional: career-break section (useful for honest gaps).
-career_breaks:
-  - period: "2019-2020"
-    description: "Sabbatical / family / health / other"
+    location: "Online"
+    date: "YYYY-MM"
+    variants: [delivery, generic, product, ai_dt, pm, all]
 
 # =============================================================================
 # Tagging vocabulary — use these tags consistently to make filtering work well.

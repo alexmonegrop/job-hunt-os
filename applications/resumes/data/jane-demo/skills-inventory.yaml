@@ -1,79 +1,114 @@
 # =============================================================================
 # skills-inventory.yaml for Jane Demo (FICTIONAL)
+# Read by tools/resume-tailor/tailor-resume.py to build the skills line.
+# Shape: technical_skills is a dict of category -> list of skill objects.
+# Each skill has name + role_relevance (which schemas.skills_filter values
+# match) + priority (higher = preferred when slots are limited).
 # =============================================================================
 
 technical_skills:
-  - name: "JIRA"
-    role_relevance: ["delivery", "generic"]
-    priority: 9
-    evidence: "Used at Acme Renewables, Globex Power, Initech"
-  - name: "Power BI"
-    role_relevance: ["delivery", "innovation", "generic"]
-    priority: 8
-    evidence: "Built executive dashboards at Acme Renewables and Globex"
-  - name: "SQL"
-    role_relevance: ["delivery", "innovation"]
-    priority: 8
-    evidence: "Wrote production queries at Globex (load forecasting)"
-  - name: "AWS (IoT Core, Lambda, S3)"
-    role_relevance: ["delivery", "innovation"]
-    priority: 9
-    evidence: "Replatformed sensor-deployment programme at Acme onto AWS IoT Core"
-  - name: "Python"
-    role_relevance: ["innovation"]
-    priority: 7
-    evidence: "Prototyped ML load-forecasting models at Globex"
-  - name: "Docker"
-    role_relevance: ["innovation"]
-    priority: 6
-    evidence: "Used at Bluepeak for product deployment"
-  - name: "Figma"
-    role_relevance: ["innovation"]
-    priority: 5
-    evidence: "Product design at Bluepeak"
+  pm_tools:
+    - name: "JIRA"
+      role_relevance: [program_management, delivery, agile]
+      priority: 9
+      evidence: "Used at Acme Renewables, Globex Power, Initech"
+    - name: "Confluence"
+      role_relevance: [program_management, delivery]
+      priority: 7
+    - name: "MS Project"
+      role_relevance: [program_management, delivery]
+      priority: 7
+
+  data_analytics:
+    - name: "Power BI"
+      role_relevance: [program_management, operations, delivery, reporting]
+      priority: 8
+      evidence: "Built executive dashboards at Acme Renewables and Globex"
+    - name: "SQL"
+      role_relevance: [ai_product, data_science, reporting, delivery]
+      priority: 8
+      evidence: "Wrote production queries at Globex (load forecasting)"
+    - name: "Tableau"
+      role_relevance: [reporting, operations]
+      priority: 6
+    - name: "Excel"
+      role_relevance: [program_management, operations, reporting]
+      priority: 6
+
+  cloud_engineering:
+    - name: "AWS"
+      role_relevance: [ai_product, digital_transformation, simulation, automation]
+      priority: 9
+      evidence: "Replatformed sensor-deployment onto AWS IoT Core"
+    - name: "Docker"
+      role_relevance: [ai_product, automation]
+      priority: 6
+      evidence: "Used at Bluepeak for product deployment"
+
+  ai_ml:
+    - name: "Python"
+      role_relevance: [ai_product, data_science, innovation]
+      priority: 7
+      evidence: "Prototyped ML load-forecasting models at Globex"
+    - name: "TensorFlow"
+      role_relevance: [ai_product, innovation, data_science]
+      priority: 6
+    - name: "Computer Vision"
+      role_relevance: [ai_product, innovation, robotics]
+      priority: 7
+      evidence: "Acme AI defect-detection product"
+
+  product_design:
+    - name: "Figma"
+      role_relevance: [ai_product, ux, design, product]
+      priority: 5
+      evidence: "Product design at Bluepeak"
+
+  methodologies:
+    - name: "Agile/Scrum"
+      role_relevance: [program_management, delivery, agile, product]
+      priority: 8
+    - name: "PMP"
+      role_relevance: [program_management, delivery, leadership, consulting]
+      priority: 9
+    - name: "CSPO"
+      role_relevance: [product, agile, ai_product]
+      priority: 8
 
 management_skills:
   - name: "Multi-stakeholder programme management"
-    role_relevance: ["delivery", "generic"]
+    role_relevance: [program_management, delivery, leadership]
     priority: 10
     evidence: "Globex grid modernisation: 8 vendors + 3 regulators"
   - name: "Cross-functional team leadership (10+)"
-    role_relevance: ["delivery", "innovation", "generic"]
+    role_relevance: [delivery, innovation, leadership, operations]
     priority: 9
     evidence: "Bluepeak (14 engineers), Initech (200-person ops)"
-  - name: "Agile / Scrum (CSPO)"
-    role_relevance: ["delivery", "innovation"]
-    priority: 8
-    evidence: "Bluepeak quarterly OKR cadence + 4 product releases"
   - name: "OKR / quarterly cadence"
-    role_relevance: ["delivery", "innovation", "generic"]
+    role_relevance: [program_management, product, leadership]
     priority: 7
   - name: "PMO / governance"
-    role_relevance: ["delivery", "generic"]
+    role_relevance: [program_management, governance, delivery]
     priority: 9
     evidence: "Acme Renewables PMO for $35M digital-twin programme"
 
 industry_knowledge:
   - name: "Energy / renewables"
-    role_relevance: ["delivery", "innovation", "generic"]
+    role_relevance: [delivery, innovation, energy]
     depth: "deep"
     evidence: "Acme Renewables (current), Globex Power"
   - name: "Industrial automation / robotics"
-    role_relevance: ["innovation", "delivery"]
+    role_relevance: [innovation, ai_product, robotics, industry_4_0]
     depth: "deep"
     evidence: "Bluepeak Robotics (founder)"
   - name: "Industrial maintenance / operations"
-    role_relevance: ["delivery"]
+    role_relevance: [delivery, operations]
     depth: "deep"
     evidence: "Initech (3 years operations leadership)"
   - name: "Machine vision / industrial AI"
-    role_relevance: ["innovation"]
+    role_relevance: [innovation, ai_product, simulation]
     depth: "moderate"
     evidence: "Acme AI (early career founder)"
-  - name: "Grid modernisation"
-    role_relevance: ["delivery"]
-    depth: "moderate"
-    evidence: "Globex (3 years)"
 
 geographic_expertise:
   - name: "Demoland"
@@ -82,9 +117,3 @@ geographic_expertise:
   - name: "Eastern Federation"
     depth: "moderate"
     evidence: "Bluepeak customers in Centralia and Eastland"
-
-methodologies:
-  - name: "Agile / Scrum"
-  - name: "PMP / PMI standards"
-  - name: "Lean / continuous improvement"
-  - name: "Design Thinking"

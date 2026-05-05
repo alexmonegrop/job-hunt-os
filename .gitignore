@@ -29,15 +29,20 @@ applications/resumes/source/*
 !applications/resumes/source/.gitkeep
 applications/resumes/data/*/
 !applications/resumes/data/_template/
+!applications/resumes/data/jane-demo/
 interviews/*/
 !interviews/.gitkeep
+!interviews/jane-demo/
 outreach/*/
 !outreach/.gitkeep
+!outreach/jane-demo/
 research/*/
 !research/.gitkeep
+!research/jane-demo/
 plans/archive/*
 !plans/archive/.gitkeep
 plans/SESSION-SUMMARY-*.md
+!plans/EXAMPLES/
 
 # --- Memory (lives outside repo by default) ---
 MEMORY.md

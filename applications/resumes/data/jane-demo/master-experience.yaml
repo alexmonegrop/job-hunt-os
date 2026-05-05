@@ -1,0 +1,209 @@
+# =============================================================================
+# master-experience.yaml for Jane Demo
+# FICTIONAL DATA — do not treat as real. Used for documentation and walkthrough
+# purposes only.
+# =============================================================================
+
+metadata:
+  user_slug: "jane-demo"
+  full_name: "Jane Demo"
+  preferred_name: "Jane"
+  location: "Northgate, Demoland"
+  email: "jane@example.com"
+  phone: "+00 555 0100"
+  linkedin: "https://linkedin.com/in/jane-demo"
+
+summaries:
+  - variant: "innovation"
+    text: |
+      AI-curious program manager and 2x co-founder. Combines enterprise-scale
+      delivery (managed $50M+ in industrial transformation programs) with
+      hands-on product instinct (co-founded Acme AI and Bluepeak Robotics).
+      Builds cross-functional teams that ship.
+  - variant: "delivery"
+    text: |
+      Senior program manager with 14 years delivering complex industrial and
+      digital transformation programs across the Demoland region. PMP and
+      CSPO certified. Track record: $50M+ programmes, 5-country scope, 5%
+      avg budget deviation, 90%+ on-time milestone delivery.
+  - variant: "generic"
+    text: |
+      Hybrid program manager and product builder. 14 years across industrial
+      transformation, AI/ML, and operations leadership. Demoland-based,
+      cross-border experience, PMP + CSPO certified.
+
+default_skills_line: "JIRA | Power BI | SQL | AWS | Python | Docker | Tableau | Figma | Agile/Scrum | PMP, CSPO Certified"
+
+experience:
+  - id: "acme-ren"
+    company: "Acme Renewables"
+    title: "Senior Program Manager, Digital Transformation"
+    location: "Northgate, Demoland"
+    start_date: "2023-03"
+    end_date: "Present"
+    summary: "Lead digital-twin and AI/IoT programs across 3 generation sites and 2 grid operations centres."
+    achievements:
+      - id: "acme-01"
+        text: |
+          Led $35M digital-twin program across 3 wind-farm generation sites,
+          delivering predictive-maintenance models that reduced unplanned
+          downtime 22% in year one.
+        priority: 10
+        tags: [delivery, digital_transformation, energy, ai, program_management]
+        metrics: ["$35M", "3 sites", "22% downtime reduction"]
+        functional_areas: ["program management", "digital transformation"]
+        better_for: ["delivery", "generic"]
+        avoid_for: []
+      - id: "acme-02"
+        text: |
+          Established cross-functional PMO for the AI/IoT roadmap, aligning
+          engineering, operations, and procurement on a 36-month delivery plan
+          with quarterly executive review cadence.
+        priority: 8
+        tags: [program_management, governance, cross_functional]
+        metrics: ["36-month roadmap"]
+        functional_areas: ["program management", "stakeholder management"]
+        better_for: ["delivery"]
+      - id: "acme-03"
+        text: |
+          Recovered a stalled $8M sensor-deployment programme by replatforming
+          the integration layer onto AWS IoT Core, reducing per-site rollout
+          time from 14 weeks to 6.
+        priority: 9
+        tags: [delivery, recovery, aws, iot]
+        metrics: ["$8M", "14 → 6 weeks"]
+        functional_areas: ["program recovery", "technical leadership"]
+        better_for: ["delivery", "innovation"]
+
+  - id: "blue-rob"
+    company: "Bluepeak Robotics"
+    title: "Co-Founder & Head of Product"
+    location: "Northgate, Demoland"
+    start_date: "2020-09"
+    end_date: "2023-02"
+    summary: "Co-founded an industrial inspection robotics company. Led product, customer pilots, and the Series A raise."
+    achievements:
+      - id: "blue-01"
+        text: |
+          Co-founded Bluepeak Robotics; raised $4.5M Series A from regional
+          industrial-tech investors at a $22M valuation 18 months from launch.
+        priority: 10
+        tags: [founder, ai, robotics, fundraising]
+        metrics: ["$4.5M", "$22M valuation", "18 months"]
+        functional_areas: ["founding", "fundraising"]
+        better_for: ["innovation"]
+      - id: "blue-02"
+        text: |
+          Designed and shipped the first commercial product (autonomous pipe-
+          inspection drone) — 11 paying enterprise customers across 3
+          industries within 12 months of launch.
+        priority: 9
+        tags: [product, robotics, b2b]
+        metrics: ["11 customers", "3 industries", "12 months"]
+        functional_areas: ["product management", "go-to-market"]
+        better_for: ["innovation", "delivery"]
+      - id: "blue-03"
+        text: |
+          Hired and led a 14-person engineering and operations team; built
+          quarterly OKR cadence and shipped 4 major releases.
+        priority: 7
+        tags: [leadership, team_building, agile]
+        metrics: ["14 engineers", "4 releases"]
+        functional_areas: ["team leadership"]
+        better_for: ["delivery", "generic"]
+
+  - id: "globex"
+    company: "Globex Power"
+    title: "Senior Program Manager, Grid Modernization"
+    location: "Riverbend, Demoland"
+    start_date: "2017-06"
+    end_date: "2020-08"
+    summary: "Managed grid-modernisation initiatives across 5 substations."
+    achievements:
+      - id: "glo-01"
+        text: |
+          Led $22M grid-modernisation programme across 5 substations, delivering
+          on-time and 4% under budget. Coordinated 8 vendors and 3 regulator
+          touchpoints.
+        priority: 9
+        tags: [delivery, energy, multi_stakeholder]
+        metrics: ["$22M", "5 substations", "4% under budget"]
+        functional_areas: ["program management"]
+      - id: "glo-02"
+        text: |
+          Piloted the company's first machine-learning load-forecasting model
+          (LSTM-based, deployed on AWS), improving day-ahead forecast MAPE
+          from 6.2% to 3.8%.
+        priority: 8
+        tags: [ai, ml, energy]
+        metrics: ["6.2% → 3.8% MAPE"]
+        functional_areas: ["technical product"]
+        better_for: ["innovation"]
+
+  - id: "initech"
+    company: "Initech Industrial Group"
+    title: "Operations Manager"
+    location: "Port Argent, Demoland"
+    start_date: "2014-05"
+    end_date: "2017-05"
+    summary: "Managed operations for a 200-person industrial maintenance division."
+    achievements:
+      - id: "ini-01"
+        text: |
+          Restructured a 200-person maintenance operation into 6 zone teams,
+          reducing average response time from 8 hours to 3.2 hours.
+        priority: 8
+        tags: [operations, leadership, restructuring]
+        metrics: ["200 people", "8 → 3.2 hours"]
+        functional_areas: ["operations leadership"]
+      - id: "ini-02"
+        text: |
+          Led a cost-savings programme that delivered $3.1M of annualised
+          savings through preventive-maintenance scheduling redesign.
+        priority: 7
+        tags: [operations, cost_reduction]
+        metrics: ["$3.1M annualised"]
+        functional_areas: ["operations"]
+
+  - id: "acme-ai"
+    company: "Acme AI (early career, founder)"
+    title: "Co-Founder & COO"
+    location: "Northgate, Demoland"
+    start_date: "2010-08"
+    end_date: "2014-04"
+    summary: "Co-founded an early machine-vision startup focused on industrial defect detection. Acquired in 2014."
+    achievements:
+      - id: "ai-01"
+        text: |
+          Co-founded Acme AI; built a machine-vision defect-detection product
+          serving 6 industrial customers. Acquired by a regional industrial
+          group in 2014.
+        priority: 9
+        tags: [founder, ai, ml, b2b]
+        metrics: ["6 customers", "acquisition exit"]
+        functional_areas: ["founding"]
+        better_for: ["innovation"]
+
+education:
+  - degree: "BSc, Industrial Engineering"
+    institution: "Demoland State University"
+    location: "Northgate, Demoland"
+    graduation_date: "2008-05"
+
+certifications:
+  - name: "PMP"
+    issuer: "PMI"
+    date: "2019-04"
+  - name: "CSPO"
+    issuer: "Scrum Alliance"
+    date: "2020-08"
+
+languages:
+  - language: "English"
+    level: "Native"
+  - language: "Federation Standard"
+    level: "Conversational"
+
+career_breaks:
+  - period: "2023-01 to 2023-02"
+    description: "Two-month sabbatical between Bluepeak exit and Acme Renewables"

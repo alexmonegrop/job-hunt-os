@@ -1,0 +1,92 @@
+# =============================================================================
+# standard-answers.yaml for Jane Demo (FICTIONAL)
+# Used by the apply skill for form auto-fill.
+# =============================================================================
+
+personal:
+  full_name: "Jane Demo"
+  preferred_name: "Jane"
+  email: "jane@example.com"
+  phone: "+00 555 0100"
+  linkedin: "https://linkedin.com/in/jane-demo"
+  city: "Northgate"
+  country: "Demoland"
+
+experience:
+  years_total: 14
+  current_title: "Senior Program Manager, Digital Transformation"
+  current_company: "Acme Renewables"
+  highest_education: "BSc, Industrial Engineering"
+
+work_authorisation:
+  status: "Demoland citizen"
+  sponsorship_required: false
+  willing_to_relocate_within: ["Demoland", "Eastern Federation"]
+
+availability:
+  start_date: "Two weeks from offer"
+  willing_to_travel_pct: 30
+
+certifications:
+  - "PMP (PMI)"
+  - "CSPO (Scrum Alliance)"
+
+languages:
+  - "English (native)"
+  - "Federation Standard (conversational)"
+
+salary_expectations:
+  currency: "DML (fictional)"
+  base_min: 120000
+  base_max: 160000
+  bonus_target_pct: 20
+  notes: "Open if total comp / equity is competitive"
+
+common_questions:
+  why_interested: |
+    [Generate per-application from the cover letter draft. Default fallback:
+    "I'm drawn to companies where AI/IoT meets industrial reality — where
+    program rigor is what makes the technology actually deliver."]
+
+  greatest_strength: |
+    Bridging product instinct and program rigor. I've co-founded two industrial-
+    AI startups and managed $50M+ programmes; I know how to ship in both
+    contexts.
+
+  greatest_weakness: |
+    I default to over-communication when stakes are high. I've learned to
+    counterbalance with clearer escalation criteria so my teams don't feel
+    over-managed.
+
+  why_leaving: |
+    [Default: "Looking for a larger surface area to apply the digital-twin
+    + AI/IoT programme model I built at Acme Renewables."]
+
+  five_year_goal: |
+    Lead a digital-transformation portfolio at the intersection of energy
+    transition and industrial AI. Either at scale inside an established
+    enterprise, or building it as a founder-operator.
+
+  difficult_situation: |
+    Recovered a stalled $8M sensor-deployment programme at Acme Renewables.
+    Replatformed integration on AWS IoT Core, renegotiated vendor SLAs, and
+    cut per-site rollout from 14 weeks to 6.
+
+  team_disagreement: |
+    At Bluepeak Robotics, my CTO co-founder and I disagreed on whether to
+    pursue a full hardware redesign before Series A or ship a software-only
+    upgrade. We ran a 30-day customer-discovery sprint to ground the decision
+    in data; ended up shipping software, raised the round, redesigned hardware
+    in year two.
+
+screening_patterns:
+  ats_keywords:
+    - "program management"
+    - "digital transformation"
+    - "AI/ML"
+    - "AWS"
+    - "stakeholder management"
+    - "PMP"
+    - "Agile"
+    - "renewable energy"
+    - "industrial automation"

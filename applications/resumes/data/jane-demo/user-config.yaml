@@ -1,0 +1,75 @@
+# =============================================================================
+# user-config.yaml for Jane Demo (the bundled demo user)
+# This is intentionally fictional. All companies, achievements, and metrics
+# are made up. Do NOT use any of this data as if it were real.
+# =============================================================================
+
+slug: "jane-demo"
+full_name: "Jane Demo"
+preferred_name: "Jane"
+location: "Northgate, Demoland"
+
+# Resume variants available for Jane Demo. Source files live in
+# applications/resumes/source/jane-demo/ (gitignored — Jane's source is
+# referenced for documentation purposes only; the demo doesn't ship a real .docx).
+resume:
+  variants:
+    - name: "Innovation"
+      description: "Founder-mindset, AI/ML, product innovation"
+      source_file: "applications/resumes/source/jane-demo/jane-demo-resume-innovation.docx"
+    - name: "Delivery"
+      description: "Program management, large-scale delivery"
+      source_file: "applications/resumes/source/jane-demo/jane-demo-resume-delivery.docx"
+    - name: "Generic"
+      description: "Balanced version"
+      source_file: "applications/resumes/source/jane-demo/jane-demo-resume-generic.docx"
+  template_mapping:
+    "Program Manager": "Delivery"
+    "Senior Program Manager": "Delivery"
+    "Senior Product Manager": "Delivery"
+    "AI/ML Product Lead": "Innovation"
+    "Director of Operations": "Delivery"
+    "Digital Transformation Director": "Generic"
+    "Innovation Director": "Innovation"
+
+# Fit-score adjustments applied on top of config/fit-score.yaml.
+# These are Jane-specific extras (e.g., from her gap analysis) that override
+# or extend the global config. The agent merges these with the global config
+# at scoring time.
+fit_score_adjustments:
+  penalties:
+    - condition: "Pure B2C consumer product company"
+      points: -3
+      rationale: "Jane has no B2C experience"
+    - condition: "PhD in Computer Science required"
+      points: -3
+      rationale: "Jane's degree is industrial engineering, no PhD"
+  bonuses:
+    - condition: "Energy or industrial transformation focus"
+      points: +1
+      rationale: "Jane's strongest domain"
+    - condition: "Multi-country regional scope"
+      points: +1
+      rationale: "Jane has cross-border PM experience"
+
+# Standard intake answers — these are also in standard-answers.yaml but
+# replicated here for cross-validation.
+work_authorisation:
+  status: "Demoland citizen"
+  sponsorship_required: false
+  willing_to_relocate_within: ["Demoland", "Eastern Federation"]
+
+# Notes for the agent on tailoring Jane's resume.
+tailoring_notes: |
+  Jane's strongest narrative is "AI-curious program manager who's delivered
+  $50M+ in industrial transformation across multiple regions." When tailoring:
+
+  - For program-manager roles: lead with delivery + multi-stakeholder programs.
+  - For AI/product roles: lead with the Acme AI co-founder bullets + the
+    digital-twin pilot at Globex Power.
+  - For director-of-operations roles: emphasise the cross-functional team
+    leadership at Initech and the cost-savings programme at Acme Renewables.
+
+  Jane is NOT a B2C product manager and should not be positioned for those.
+  Jane does NOT speak Federation Standard fluently — penalise postings that
+  require fluent Federation Standard.

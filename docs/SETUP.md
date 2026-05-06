@@ -100,20 +100,23 @@ Edit `~/.claude.json` and add an entry under `projects > <path-to-job-hunt-os> >
     "<absolute path to job-hunt-os>": {
       "mcpServers": {
         "nocodb": {
+          "type": "stdio",
           "command": "npx",
-          "args": ["-y", "@anthropic/mcp-nocodb"],
+          "args": ["-y", "@andrewlwn77/nocodb-mcp"],
           "env": {
             "NOCODB_BASE_URL": "http://localhost:8080",
             "NOCODB_API_TOKEN": "<your token>"
           }
         },
         "context7": {
+          "type": "stdio",
           "command": "npx",
-          "args": ["-y", "@anthropic/mcp-context7"]
+          "args": ["-y", "@upstash/context7-mcp"]
         },
         "playwright": {
+          "type": "stdio",
           "command": "npx",
-          "args": ["-y", "@anthropic/mcp-playwright"]
+          "args": ["-y", "@playwright/mcp@latest"]
         }
       }
     }

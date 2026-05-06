@@ -43,6 +43,11 @@ services:
       # NocoDB stores its own metadata (users, bases, views) in a separate DB
       # called `nocodb`, created by init-db/01-create-databases.sql.
       NC_DB: "pg://postgres:5432?u=jobhunt&p=${POSTGRES_PASSWORD}&d=nocodb"
+      # Required to add the sibling `postgres` container as a Data Source via
+      # the NocoDB UI. Without this, NocoDB rejects internal/private hostnames
+      # (`postgres`, 172.x, 10.x, etc.) with "Forbidden host name or IP address"
+      # as an SSRF safeguard. Safe for local/self-hosted single-tenant use.
+      NC_ALLOW_LOCAL_EXTERNAL_DBS: "true"
     ports:
       - "${NOCODB_HOST_PORT:-8080}:8080"
     volumes:

@@ -4,7 +4,7 @@
 
 Fork this template, plug in your resume, and run a structured pipeline of cold outreach, networking follow-ups, job discovery, resume tailoring, and application tracking — all coordinated by an AI agent.
 
-> Status: **v1 template complete.** Rules, skills, operating procedures, configuration, demo data, and documentation are all in place. The Python tooling and Docker infrastructure ports are deferred to a follow-up release — see [`docs/PLAN.md`](docs/PLAN.md) for the rollout plan.
+> Status: **v1 template complete.** Rules, skills, operating procedures, configuration, Python tooling, Docker infrastructure, demo data, and documentation are all in place — see [`docs/PLAN.md`](docs/PLAN.md) for the rollout history.
 
 > AI agents picking up this repo: read **[`AGENTS.md`](AGENTS.md)** first. It's the canonical onboarding doc for the AI operator.
 
@@ -21,14 +21,9 @@ Fork this template, plug in your resume, and run a structured pipeline of cold o
 - **Configurable everything** (`config/*.yaml`) — your region, target roles, industries, fit-score weights, and excluded companies live in YAML. Same agent, any market.
 - **A bundled demo user** ("Jane Demo") with a full fictional dataset and an end-to-end walkthrough at [`plans/EXAMPLES/jane-demo-walkthrough.md`](plans/EXAMPLES/jane-demo-walkthrough.md).
 - **Reference templates** for the master-experience YAML and cover letters.
-
-### Coming in a follow-up release (Phase 4)
-
 - **Tools** (`tools/`) — Python CLIs for resume tailoring (with quality gate), JobSpy job discovery, mock-interview LLM, NocoDB schema initialisation, and onboarding bootstrap.
-- **Infrastructure** (`infrastructure/`) — Docker Compose stack for self-hosted NocoDB + n8n, Caddy proxy, init-db SQL.
+- **Infrastructure** (`infrastructure/`) — Docker Compose stack for self-hosted NocoDB + Postgres (Caddy reverse proxy as an opt-in profile), with seed schema.
 - **Employer-extension example** (`tools/employer-extension-example/`) — a documented pattern for extending the system per-employer.
-
-These are deferred because they require live testing with Docker and a real database; they'll land in a focused follow-up session.
 
 ---
 
@@ -46,12 +41,12 @@ These are deferred because they require live testing with Docker and a real data
 # 1. Use this template (or fork)
 gh repo create my-job-hunt --template <your-org>/job-hunt-os --private
 
-# 2. Bring up the data backend (Phase 4 — once docker-compose lands)
-# cd my-job-hunt/infrastructure && cp .env.example .env && docker compose up -d
+# 2. Bring up the data backend
+cd my-job-hunt/infrastructure && cp .env.example .env && docker compose up -d
 
-# 3. Initialise the schema and install Claude Code MCPs (Phase 4)
-# python tools/setup/init-nocodb.py
-# python tools/setup/first-run.py
+# 3. Initialise the schema and install Claude Code MCPs
+python tools/setup/init-nocodb.py
+python tools/setup/first-run.py
 
 # 4. Customise config
 cd my-job-hunt
@@ -79,7 +74,7 @@ Walkthrough: [`docs/EXAMPLES.md`](docs/EXAMPLES.md).
 
 ## Architecture in one paragraph
 
-Rules (`.claude/rules/*.md`) auto-load at session start and define non-negotiable standards. Skills (`.claude/skills/*/SKILL.md`) are invokable workflows. Operating procedures (`operating-procedures/*.md`) are long-form methodology references the skills point to. Tools (`tools/`) are CLI utilities the skills shell out to (Phase 4). Configuration (`config/*.yaml` + `.env`) holds your region, target roles, fit-score weighting, industry vocabulary, and credentials — making the same agent useful in any market. Data lives in NocoDB by default; per-user content lives under `applications/{slug}/`, `interviews/{slug}/`, `outreach/{slug}/`, `research/{slug}/`, all gitignored at the user level.
+Rules (`.claude/rules/*.md`) auto-load at session start and define non-negotiable standards. Skills (`.claude/skills/*/SKILL.md`) are invokable workflows. Operating procedures (`operating-procedures/*.md`) are long-form methodology references the skills point to. Tools (`tools/`) are CLI utilities the skills shell out to. Configuration (`config/*.yaml` + `.env`) holds your region, target roles, fit-score weighting, industry vocabulary, and credentials — making the same agent useful in any market. Data lives in NocoDB by default; per-user content lives under `applications/{slug}/`, `interviews/{slug}/`, `outreach/{slug}/`, `research/{slug}/`, all gitignored at the user level.
 
 More: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 

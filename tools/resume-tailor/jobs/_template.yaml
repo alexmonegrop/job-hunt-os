@@ -54,5 +54,6 @@ industry_keywords:               # domain terms; matches score 1 each (max 2)
 
 # --- Bullet selection controls (optional) ---
 # override_only: true             # if true, only use achievements listed in text_overrides
-# min_bullets: 22                 # override the global min_bullets target
+# min_bullets: 22                 # override the global min_bullets target (also read by quality-gate.py)
+# hard_fail_min_bullets: 17       # quality-gate.py FAIL threshold; defaults to min(17, min_bullets-5)
 # max_per_role: 4                 # override the per-company-section max

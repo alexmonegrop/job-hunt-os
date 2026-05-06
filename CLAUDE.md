@@ -42,7 +42,7 @@ For pushing this repo to GitHub:
 
 See `docs/PLAN.md` for the full rollout history.
 
-**Current state (as of v1 release)**: Phases 1, 2, 3, 5, 6, 7 are complete. Phase 4 (Python tooling + Docker infrastructure) is deferred to a focused follow-up session.
+**Current state (as of v1 release)**: All 7 phases complete. The v1 template ships with rules, skills, operating procedures, configuration, Python tooling (resume tailor + quality gate, job search, interview/transcription, NocoDB bootstrap), Docker infrastructure (postgres + NocoDB), demo data (Jane Demo), and full documentation.
 
 When you continue this work, always start by re-reading `docs/PLAN.md` and updating it to reflect what's done. The validation gates at the end of each phase are not optional.
 

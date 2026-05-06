@@ -116,30 +116,114 @@ def api_get(url: str, token: str) -> dict:
     return r.json()
 
 
-def find_jobhunt_base(nocodb_url: str, token: str) -> str:
-    """Find the base id by listing bases and matching on tables present."""
-    bases_url = f"{nocodb_url.rstrip('/')}/api/v2/meta/bases"
-    payload = api_get(bases_url, token)
-    candidates = payload.get("list", payload) if isinstance(payload, dict) else payload
+def list_all_bases(nocodb_url: str, token: str) -> list[dict]:
+    """Enumerate every base the token can see.
 
-    for base in candidates:
-        base_id = base.get("id") or base.get("base_id")
-        if not base_id:
+    NocoDB 2026.x is workspace-scoped: `/api/v2/meta/bases` returns 403 with a
+    PAT, so we walk workspaces and concatenate their bases. Older versions
+    expose the flat `/api/v2/meta/bases` endpoint — try it first and fall back.
+    """
+    base_url = nocodb_url.rstrip("/")
+    try:
+        payload = api_get(f"{base_url}/api/v2/meta/bases", token)
+        flat = payload.get("list", payload) if isinstance(payload, dict) else payload
+        if flat:
+            return flat
+    except requests.HTTPError:
+        pass
+
+    ws_payload = api_get(f"{base_url}/api/v2/meta/workspaces", token)
+    workspaces = ws_payload.get("list", ws_payload) if isinstance(ws_payload, dict) else ws_payload
+    bases: list[dict] = []
+    for ws in workspaces:
+        ws_id = ws.get("id")
+        if not ws_id:
             continue
-        tables_url = f"{nocodb_url.rstrip('/')}/api/v2/meta/bases/{base_id}/tables"
         try:
-            tables_payload = api_get(tables_url, token)
+            payload = api_get(f"{base_url}/api/v2/meta/workspaces/{ws_id}/bases", token)
         except requests.HTTPError:
             continue
-        tables = tables_payload.get("list", tables_payload) if isinstance(tables_payload, dict) else tables_payload
-        names = {t.get("table_name") or t.get("title") for t in tables}
-        if EXPECTED_TABLES.issubset({n for n in names if n}):
+        ws_bases = payload.get("list", payload) if isinstance(payload, dict) else payload
+        for b in ws_bases:
+            b.setdefault("fk_workspace_id", ws_id)
+        bases.extend(ws_bases)
+    return bases
+
+
+def base_has_jobhunt_tables(nocodb_url: str, token: str, base_id: str) -> bool:
+    tables_url = f"{nocodb_url.rstrip('/')}/api/v2/meta/bases/{base_id}/tables"
+    try:
+        payload = api_get(tables_url, token)
+    except requests.HTTPError:
+        return False
+    tables = payload.get("list", payload) if isinstance(payload, dict) else payload
+    names = {t.get("table_name") or t.get("title") for t in tables}
+    return EXPECTED_TABLES.issubset({n for n in names if n})
+
+
+def create_jobhunt_base(nocodb_url: str, token: str, workspace_id: str,
+                        pg_host: str, pg_port: str, pg_user: str,
+                        pg_password: str, pg_database: str) -> str:
+    """Create the JobHunt base + postgres source via API.
+
+    Used as a fallback when the user hasn't connected the database manually
+    yet. Returns the new base id.
+    """
+    url = f"{nocodb_url.rstrip('/')}/api/v2/meta/workspaces/{workspace_id}/bases"
+    body = {
+        "title": "JobHunt",
+        "type": "database",
+        "external": True,
+        "sources": [{
+            "alias": "jobhunt",
+            "type": "pg",
+            "config": {
+                "client": "pg",
+                "connection": {
+                    "host": pg_host, "port": pg_port,
+                    "user": pg_user, "password": pg_password,
+                    "database": pg_database,
+                },
+                "searchPath": ["public"],
+            },
+            "inflection_column": "none",
+            "inflection_table": "none",
+        }],
+    }
+    r = requests.post(url, json=body, headers={"xc-token": token}, timeout=30)
+    r.raise_for_status()
+    return r.json()["id"]
+
+
+def find_jobhunt_base(nocodb_url: str, token: str,
+                      pg_creds: dict | None = None) -> str:
+    """Find (or auto-create) the base containing the 7 jobhunt tables."""
+    bases = list_all_bases(nocodb_url, token)
+    for base in bases:
+        base_id = base.get("id") or base.get("base_id")
+        if base_id and base_has_jobhunt_tables(nocodb_url, token, base_id):
             return base_id
 
+    # No matching base. If we have postgres credentials, auto-create one.
+    if pg_creds:
+        ws_id = next(
+            (b.get("fk_workspace_id") for b in bases if b.get("fk_workspace_id")),
+            None,
+        )
+        if not ws_id:
+            ws_payload = api_get(f"{nocodb_url.rstrip('/')}/api/v2/meta/workspaces", token)
+            ws_list = ws_payload.get("list", ws_payload) if isinstance(ws_payload, dict) else ws_payload
+            ws_id = ws_list[0]["id"] if ws_list else None
+        if ws_id:
+            print(f"  No matching base found - creating one in workspace {ws_id}...")
+            new_id = create_jobhunt_base(nocodb_url, token, ws_id, **pg_creds)
+            if base_has_jobhunt_tables(nocodb_url, token, new_id):
+                return new_id
+
     sys.exit(
-        "Could not find a NocoDB base containing all 7 expected tables: "
-        + ", ".join(sorted(EXPECTED_TABLES))
-        + ". Have you added the postgres `jobhunt` database as a Data Source in NocoDB?"
+        "Could not find or create a NocoDB base containing all 7 expected "
+        "tables: " + ", ".join(sorted(EXPECTED_TABLES))
+        + ". Verify the postgres `jobhunt` database is reachable and the schema loaded."
     )
 
 
@@ -185,8 +269,25 @@ def main() -> int:
 
     print(f"Connecting to NocoDB at {nocodb_url}...")
 
+    # Optional postgres creds — used to auto-create the JobHunt base if no
+    # base with the 7 expected tables exists yet. Read from infrastructure/.env
+    # since that's where POSTGRES_PASSWORD lives.
+    pg_creds: dict | None = None
+    infra_env_path = root / "infrastructure" / ".env"
+    if infra_env_path.exists():
+        infra_env = load_env(infra_env_path)
+        pg_password = infra_env.get("POSTGRES_PASSWORD", "")
+        if pg_password:
+            pg_creds = {
+                "pg_host": "postgres",  # NocoDB resolves this via the docker network
+                "pg_port": "5432",
+                "pg_user": "jobhunt",
+                "pg_password": pg_password,
+                "pg_database": "jobhunt",
+            }
+
     try:
-        base_id = find_jobhunt_base(nocodb_url, token)
+        base_id = find_jobhunt_base(nocodb_url, token, pg_creds=pg_creds)
     except requests.HTTPError as e:
         sys.exit(f"NocoDB API error: {e}")
 

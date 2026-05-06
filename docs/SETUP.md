@@ -5,8 +5,8 @@ End-to-end installation walkthrough. This is for a single-user setup; for multi-
 ## Prerequisites
 
 - **Claude Code** (or another agent compatible with the `.claude/` rules + skills system) installed and working.
-- **Python 3.10+** with `pip` (Phase 4 — required for resume-tailor, job-search, etc.).
-- **Docker Desktop** running (Phase 4 — required for the NocoDB stack and the LinkedIn MCP).
+- **Python 3.10+** with `pip` (required for resume-tailor, job-search, etc.).
+- **Docker Desktop** running (required for the NocoDB stack and the LinkedIn MCP).
 - **Git** installed.
 - A GitHub account (for forking / templating this repo).
 
@@ -30,12 +30,12 @@ Edit `.env` and fill in:
 
 | Variable | What | How |
 |----------|------|-----|
-| `NOCODB_URL` | NocoDB instance URL | Default `http://localhost:8080` (self-hosted via `infrastructure/docker-compose.yml` in Phase 4) |
+| `NOCODB_URL` | NocoDB instance URL | Default `http://localhost:8080` (self-hosted via `infrastructure/docker-compose.yml`) |
 | `NOCODB_API_TOKEN` | API token | Once NocoDB is up: log in → Account → Tokens → create new |
-| `NOCODB_BASE_ID` | Base id for the JobHunt base | Set by `tools/setup/init-nocodb.py` (Phase 4); leave blank for now |
+| `NOCODB_BASE_ID` | Base id for the JobHunt base | Set automatically by `tools/setup/init-nocodb.py`; leave blank initially |
 | `NOCODB_MCP_PREFIX` | Tool prefix used by the agent | Default `mcp__nocodb__` |
 | `JOB_HUNT_USER` | Active user slug | Set to your slug (e.g., `jane-doe`). For demo, use `jane-demo` |
-| `OPENROUTER_API_KEY` | Optional | For mock-interview / recruiter-review tools (Phase 4); skip for now |
+| `OPENROUTER_API_KEY` | Optional | For mock-interview / recruiter-review tools; skip if you don't use them |
 | `GITHUB_PAT` | Optional | For session-start git pull / session-end git push using PAT-in-URL pattern |
 
 Never commit `.env` — it's gitignored.
@@ -58,22 +58,28 @@ Edit each:
 
 These files are gitignored — your real config never gets pushed.
 
-## Step 4: Bring up the data backend (Phase 4)
+## Step 4: Bring up the data backend
 
-> ⏳ The Docker Compose stack is in the deferred Phase 4. For now, you can either:
-> - **Wait** for the Phase 4 release.
-> - **Use a NocoDB cloud instance** at https://nocodb.com (free tier).
-> - **Build the schema manually** by importing `infrastructure/init-db/02-jobhunt-schema.sql` (Phase 4) into a Postgres instance and pointing NocoDB at it.
-
-Once Phase 4 lands:
 ```bash
 cd infrastructure
-cp .env.example .env       # fill in DB passwords
-docker compose up -d
-# Visit http://localhost:8080, create your admin user, generate an API token.
+cp .env.example .env                      # set POSTGRES_PASSWORD (e.g. `openssl rand -hex 32`)
+docker compose up -d                      # postgres + nocodb
 ```
 
-## Step 5: Initialise the schema (Phase 4)
+Wait ~30s for the NocoDB healthcheck. Then at `http://localhost:8080`:
+
+1. **Create the admin user** (any email/password — local-only).
+2. **Account → Tokens → + New** → copy the token into the root `.env` as `NOCODB_API_TOKEN`.
+
+That's it. `tools/setup/init-nocodb.py` (next step) auto-creates the JobHunt base by reading `POSTGRES_PASSWORD` from `infrastructure/.env` — no UI plumbing needed.
+
+> **"Forbidden host name or IP address"** if you ever rebuild the data source manually means NocoDB is enforcing SSRF protection against internal hostnames. The shipped `docker-compose.yml` sets `NC_ALLOW_LOCAL_EXTERNAL_DBS=true` to permit the Docker-internal `postgres` host; the auto-create flow needs this too. If you removed it, add it back and recreate the nocodb container (`docker compose up -d --no-deps nocodb`).
+
+Alternative deployments if you don't want to run Docker locally:
+- **NocoDB cloud** at https://nocodb.com (free tier).
+- **Manual schema import**: load `infrastructure/init-db/02-jobhunt-schema.sql` into your own Postgres and point NocoDB at it.
+
+## Step 5: Initialise the schema
 
 ```bash
 python tools/setup/init-nocodb.py
@@ -136,7 +142,7 @@ Add to `~/.claude.json`:
 }
 ```
 
-## Step 7: First-run health check (Phase 4)
+## Step 7: First-run health check
 
 ```bash
 python tools/setup/first-run.py
@@ -183,7 +189,7 @@ It shows what a typical session looks like end-to-end.
 | `/session-start` shows LinkedIn DISCONNECTED | Docker not running, or `li_at` expired | Start Docker, refresh `li_at` cookie |
 | Playwright tools not registered | Chrome was open when Claude Code launched | Close all Chrome instances, restart Claude Code |
 | `git push` fails with 401 | PAT expired or scope wrong | Regenerate PAT (scope: `repo`); see PAT-in-URL pattern in `session-end` skill |
-| `/job-search` Python errors | `python-jobspy` not installed | `pip install python-jobspy` (Phase 4) |
+| `/job-search` Python errors | `python-jobspy` not installed | `pip install python-jobspy` |
 | Resume tailoring fails quality gate | JD not specific enough OR overrides incomplete | Open `applications/jobs/{company}-{job-slug}.yaml`, add more text_overrides, regenerate |
 | `bulk_insert` returns "fetch failed" | MCP transient error | Retry once after 2 sec; if still failing, see `01-database-standards.md` Rule 9 |
 

@@ -146,18 +146,21 @@ def extract_resume_content(docx_path: Path) -> dict:
     }
 
 
-def check_bullet_count(content: dict) -> dict:
+def check_bullet_count(content: dict, job: dict | None = None) -> dict:
     count = len(content["bullets"])
-    if count < HARD_FAIL_MIN_BULLETS:
+    job = job or {}
+    min_bullets = int(job.get("min_bullets", MIN_BULLETS))
+    hard_fail = int(job.get("hard_fail_min_bullets", min(HARD_FAIL_MIN_BULLETS, max(min_bullets - 5, 1))))
+    if count < hard_fail:
         return {"check": "bullet_count", "status": "FAIL", "value": count,
-                "threshold": f">= {MIN_BULLETS} (hard fail < {HARD_FAIL_MIN_BULLETS})",
-                "detail": f"Only {count} bullets found. Add more text_overrides or increase min_bullets in job YAML."}
-    if count < MIN_BULLETS:
+                "threshold": f">= {min_bullets} (hard fail < {hard_fail})",
+                "detail": f"Only {count} bullets found. Add more text_overrides or lower min_bullets in job YAML."}
+    if count < min_bullets:
         return {"check": "bullet_count", "status": "FAIL", "value": count,
-                "threshold": f">= {MIN_BULLETS}",
-                "detail": f"{count} bullets found, target is {MIN_BULLETS}+. Page 2 will be thin."}
+                "threshold": f">= {min_bullets}",
+                "detail": f"{count} bullets found, target is {min_bullets}+. Page 2 will be thin."}
     return {"check": "bullet_count", "status": "PASS", "value": count,
-            "threshold": f">= {MIN_BULLETS}", "detail": f"{count} bullets found."}
+            "threshold": f">= {min_bullets}", "detail": f"{count} bullets found."}
 
 
 def check_skills_line(content: dict) -> dict:
@@ -401,7 +404,7 @@ def run_quality_gate(resume_path: Path, job_path: Path, user: str) -> dict:
     job = load_yaml(job_path)
     content = extract_resume_content(resume_path)
     checks = [
-        check_bullet_count(content),
+        check_bullet_count(content, job),
         check_skills_line(content),
         check_title_match(content, job),
         check_summary_keywords(content, job),

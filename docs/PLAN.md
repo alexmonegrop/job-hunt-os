@@ -1,99 +1,43 @@
 # Rollout Plan — `job-hunt-os`
 
-**Status as of last update**: **Phase 4 ~83% done. M7-M11 shipped. M12 remaining.**
-Phases 1, 2, 3, 5, 6, 7 = v1 template (complete). Phase 4 (Python tooling + Docker infrastructure) is split across milestones M7-M12; M7 through M11 are committed and pushed. M12 (integration smoke test + Phase 4 close-out) is the only remaining work.
+**Status as of last update**: **All 7 phases complete. v1 template shipped (M12 closes out Phase 4).**
 
 This file is the canonical handoff doc — read it first when picking up this project in a new session.
 
 ---
 
-## RESUME HERE (next session)
+## v1 release: shipped
 
-**Last session ended after M11 push (commit `8767916`). Resume at M12.**
+All seven phases are complete. The v1 template is operational end-to-end:
 
-What M12 needs to do:
+- Rules + skills + operating procedures (Phases 2, 3, 5)
+- Configurable for any region/industry/role (Phase 3)
+- Python tooling: resume tailor, quality gate, PDF, job search, interview/transcription, NocoDB bootstrap (Phase 4)
+- Docker infrastructure: Postgres + NocoDB with seed schema (Phase 4)
+- Jane Demo dataset + walkthrough (Phase 6)
+- Full documentation including AGENTS.md (Phase 7)
 
-1. **Bring the data stack back up** (it was torn down clean at end of M7 testing):
-   ```bash
-   cd infrastructure
-   cp .env.example .env
-   # Edit .env: set POSTGRES_PASSWORD to a fresh hex token
-   docker compose up -d
-   ```
-   Wait ~30 sec for healthcheck.
+### M12 close-out (most recent)
 
-2. **Set up NocoDB**: visit `http://localhost:8080`, create admin user, add the postgres `jobhunt` DB as a Data Source (host `postgres`, port `5432`, user `jobhunt`, pwd from `infrastructure/.env`, db `jobhunt`), generate API token.
+- **Smoke test against jane-demo passed end-to-end**: scoring-only → full `.docx` → quality gate (8 PASS, 1 WARN for the deferred recruiter-review skip, 0 FAIL) → PDF generation via docx2pdf.
+- **Two real bugs fixed in flight**:
+  - `quality-gate.py` `check_bullet_count` now actually honours `min_bullets` / `hard_fail_min_bullets` from the job YAML. Its error message previously promised this but the constants were hardcoded.
+  - `init-nocodb.py` now walks workspace-scoped endpoints (NocoDB 2026.04 returns 403 on the legacy flat `/api/v2/meta/bases` for PATs) **and** auto-creates the JobHunt base + postgres source if it doesn't exist yet — eliminating the "add the data source via the UI" manual step.
+- **Two infrastructure gotchas documented + solved**:
+  - `docker-compose.yml` now sets `NC_ALLOW_LOCAL_EXTERNAL_DBS=true` so NocoDB doesn't reject the Docker-internal `postgres` hostname with "Forbidden host name or IP address".
+  - `_template.yaml` surfaces the `min_bullets` and `hard_fail_min_bullets` overrides.
 
-3. **Configure project `.env`**:
-   ```bash
-   cp .env.example .env
-   # Edit: JOB_HUNT_USER=jane-demo
-   # Edit: NOCODB_URL=http://localhost:8080
-   # Edit: NOCODB_API_TOKEN=<from step 2>
-   ```
+### Deferred from Phase 4 (still deferred — not blocking v1)
 
-4. **Discover schema IDs**:
-   ```bash
-   python tools/setup/init-nocodb.py
-   ```
-   Should write `NOCODB_BASE_ID` + 3 link-field IDs back to `.env`.
-
-5. **End-to-end smoke test** against jane-demo:
-   ```bash
-   # 5a. Already proven during M8: scoring-only mode produces correct JSON
-   python tools/resume-tailor/tailor-resume.py --user jane-demo \
-     --job-file tools/resume-tailor/jobs/_template.yaml \
-     --output-dir /tmp/jane-test --scoring-only
-
-   # 5b. Full mode: generate .docx (NEW — not yet validated)
-   python tools/resume-tailor/tailor-resume.py --user jane-demo \
-     --job-file tools/resume-tailor/jobs/_template.yaml \
-     --output-dir /tmp/jane-test
-   # Expected: /tmp/jane-test/resume.docx written
-
-   # 5c. Quality gate against the generated .docx (NEW — not yet validated)
-   python tools/resume-tailor/quality-gate.py --user jane-demo \
-     --resume /tmp/jane-test/resume.docx \
-     --job-file tools/resume-tailor/jobs/_template.yaml
-   # Expected: JSON scorecard with PASS/WARN/FAIL verdict.
-   # Note: recruiter_review will WARN-skip (recruiter-review.py deferred).
-
-   # 5d. PDF generation (NEW — needs docx2pdf or LibreOffice)
-   python tools/resume-tailor/generate-pdf.py --input /tmp/jane-test/resume.docx
-   # Expected: /tmp/jane-test/resume.pdf
-   # If docx2pdf fails (no MS Word), fall back to LibreOffice or document
-   # as a known platform-dependent step.
-   ```
-
-6. **Tear down**:
-   ```bash
-   docker compose --project-directory infrastructure down -v
-   rm infrastructure/.env
-   ```
-
-7. **Update PLAN.md + README.md**:
-   - Mark Phase 4 as **DONE**.
-   - Drop the "Phase 4 deferred" callout from README.
-   - Update status summary table.
-
-8. **Final commit + push** as M12.
-
-### Known issues to address in M12 if encountered
-
-- **`docx2pdf` may fail without MS Word** — script falls back to LibreOffice. If neither is installed on the test machine, document as a "user-side dependency" and proceed (not a code bug).
-- **Quality gate may FAIL on bullet count** — Jane's master-experience.yaml has 14 achievements total. With `min_bullets: 22` default, the tool will fill aggressively. If it can't reach 22 (because Jane only has 14), the gate FAILs on bullet_count. Either: (a) lower `min_bullets` in the test job YAML to 14, or (b) document as expected behaviour and PASS the WARN. Recommend (a) for the smoke test.
-- **NocoDB MCP not configured in test session** — that's fine; the smoke test exercises the Python tools directly via CLI, not via Claude Code MCP. The MCP integration is exercised separately via `/session-start`.
-
-### Optional in M12 (nice-to-have, not blocking)
-
-- Run `/session-start` in Claude Code with the live stack to verify the MCP integration works end-to-end (database connected, can list tables, etc.). This requires `~/.claude.json` configured with the local NocoDB token — non-trivial setup. Defer to a documentation-only validation if time-constrained.
-
-### Deferred from Phase 4 (not in M12 scope)
-
-- `tools/resume-tailor/recruiter-review.py` — LLM recruiter review using OpenRouter. Quality gate gracefully WARN-skips when missing. Add in a follow-up release.
-- `tools/resume-tailor/create-template.py` — variant scaffolding utility. Less critical than core flow.
-- The full Sia / employer-extension Python port. The README pattern doc shipped in M5 documents the pattern; users can build their own employer extensions with that as guidance. Per session direction.
+- `tools/resume-tailor/recruiter-review.py` — LLM recruiter review via OpenRouter. Quality gate WARN-skips when missing. Worth adding in a follow-up release.
+- `tools/resume-tailor/create-template.py` — variant scaffolding utility. Less critical than the core flow.
+- The full Sia / employer-extension Python port. The README pattern doc in M5 documents the pattern; users build their own employer extensions with that as guidance. Per session direction.
 - n8n MCP integration. Per session direction (dropped entirely).
+
+### Optional follow-up (not in v1 scope)
+
+- `/session-start` MCP integration end-to-end test against a live local stack. Requires `~/.claude.json` configured with the local NocoDB token — non-trivial setup; deferred to documentation-only validation.
+- Mark the GitHub repo as a Template Repository, add description/topics, pin to profile (UI-only actions).
 
 ---
 
@@ -143,9 +87,9 @@ Output:
 
 Validation gate: rules and skills reference `config/*.yaml` paths instead of hardcoded values; fresh user can `cp config/*.example.yaml → config/*.yaml` and run skills with sane defaults.
 
-### Phase 4 — Port tools and infrastructure — IN PROGRESS (M7-M11 done, M12 remaining)
+### Phase 4 — Port tools and infrastructure — DONE
 
-**Status**: Phase 4 split into 6 milestones; M7-M11 shipped, M12 (smoke test + close-out) is the only remaining work. See "RESUME HERE" section above.
+**Status**: All 6 milestones (M7-M12) shipped. See "M12 close-out" at the top of this file for what the smoke test surfaced and fixed.
 
 #### M7 — Infrastructure + setup tools — DONE (commit `da89ad9`)
 Ported (sanitised):
@@ -233,9 +177,9 @@ Per session direction: dropped n8n MCP entry entirely; dropped Sia tool port ent
 
 Validation: forbidden-token grep on tools/bootstrap/: zero hits across 40+ patterns.
 
-#### M12 — Integration smoke test + close-out — REMAINING
+#### M12 — Integration smoke test + close-out — DONE
 
-See "RESUME HERE" section at the top of this file.
+Validated end-to-end against jane-demo with the live Postgres + NocoDB stack. Smoke test summary and the two bugs / two gotchas surfaced in flight are at the top of this file under "M12 close-out". Stack torn down clean (`docker compose down -v` + `rm infrastructure/.env`).
 
 ### Phase 5 — Port operating procedures + reference templates — DONE
 
@@ -295,9 +239,6 @@ Note: marking the GitHub repo as a Template Repository, adding repo description 
 
 ## Deferred — separate workstreams
 
-### Phase 4 — Python tooling + Docker infrastructure
-See above. This is the next focused session.
-
 ### Private-repo hygiene audit (`alexmonegrop/job-hunt`, separate from this template)
 
 After Phase 4 lands, do a sweep of the private repo to:
@@ -353,9 +294,9 @@ job-hunt-os/
 | 1 — Scaffolding | DONE | Skeleton + GitHub repo | (initial) |
 | 2 — Rules + skills | DONE | Forbidden-token grep zero hits | M1 |
 | 3 — Config | DONE | Skills read from config/*.yaml | M2 |
-| 4 — Tools + infra | **DEFERRED** | (when run) Fresh init produces working schema + tools execute | — |
+| 4 — Tools + infra | DONE | Smoke test against jane-demo: scoring-only → .docx → quality gate (PASS) → PDF | M7-M12 |
 | 5 — Operating procedures + reference templates | DONE | Forbidden-token grep zero hits | M3 |
 | 6 — Jane Demo + walkthrough | DONE | Walkthrough internal links resolve | M4 |
 | 7 — Documentation + AGENTS.md | DONE | Internal markdown links resolve; SETUP followable | M5 |
 
-**v1 template release**: ready when Phase 4 ships. Until then, this is a **methodology + structure release** — the reasoning system is complete, the executable Python tooling is the remaining gap.
+**v1 template release**: shipped with M12.

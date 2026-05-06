@@ -1,6 +1,99 @@
 # Rollout Plan — `job-hunt-os`
 
-**Status as of last update**: **v1 template complete.** Phases 1, 2, 3, 5, 6, 7 done. Phase 4 (Python tooling + Docker infrastructure) deferred to a follow-up release. This file is the canonical handoff doc — read it first when picking up this project in a new session.
+**Status as of last update**: **Phase 4 ~83% done. M7-M11 shipped. M12 remaining.**
+Phases 1, 2, 3, 5, 6, 7 = v1 template (complete). Phase 4 (Python tooling + Docker infrastructure) is split across milestones M7-M12; M7 through M11 are committed and pushed. M12 (integration smoke test + Phase 4 close-out) is the only remaining work.
+
+This file is the canonical handoff doc — read it first when picking up this project in a new session.
+
+---
+
+## RESUME HERE (next session)
+
+**Last session ended after M11 push (commit `8767916`). Resume at M12.**
+
+What M12 needs to do:
+
+1. **Bring the data stack back up** (it was torn down clean at end of M7 testing):
+   ```bash
+   cd infrastructure
+   cp .env.example .env
+   # Edit .env: set POSTGRES_PASSWORD to a fresh hex token
+   docker compose up -d
+   ```
+   Wait ~30 sec for healthcheck.
+
+2. **Set up NocoDB**: visit `http://localhost:8080`, create admin user, add the postgres `jobhunt` DB as a Data Source (host `postgres`, port `5432`, user `jobhunt`, pwd from `infrastructure/.env`, db `jobhunt`), generate API token.
+
+3. **Configure project `.env`**:
+   ```bash
+   cp .env.example .env
+   # Edit: JOB_HUNT_USER=jane-demo
+   # Edit: NOCODB_URL=http://localhost:8080
+   # Edit: NOCODB_API_TOKEN=<from step 2>
+   ```
+
+4. **Discover schema IDs**:
+   ```bash
+   python tools/setup/init-nocodb.py
+   ```
+   Should write `NOCODB_BASE_ID` + 3 link-field IDs back to `.env`.
+
+5. **End-to-end smoke test** against jane-demo:
+   ```bash
+   # 5a. Already proven during M8: scoring-only mode produces correct JSON
+   python tools/resume-tailor/tailor-resume.py --user jane-demo \
+     --job-file tools/resume-tailor/jobs/_template.yaml \
+     --output-dir /tmp/jane-test --scoring-only
+
+   # 5b. Full mode: generate .docx (NEW — not yet validated)
+   python tools/resume-tailor/tailor-resume.py --user jane-demo \
+     --job-file tools/resume-tailor/jobs/_template.yaml \
+     --output-dir /tmp/jane-test
+   # Expected: /tmp/jane-test/resume.docx written
+
+   # 5c. Quality gate against the generated .docx (NEW — not yet validated)
+   python tools/resume-tailor/quality-gate.py --user jane-demo \
+     --resume /tmp/jane-test/resume.docx \
+     --job-file tools/resume-tailor/jobs/_template.yaml
+   # Expected: JSON scorecard with PASS/WARN/FAIL verdict.
+   # Note: recruiter_review will WARN-skip (recruiter-review.py deferred).
+
+   # 5d. PDF generation (NEW — needs docx2pdf or LibreOffice)
+   python tools/resume-tailor/generate-pdf.py --input /tmp/jane-test/resume.docx
+   # Expected: /tmp/jane-test/resume.pdf
+   # If docx2pdf fails (no MS Word), fall back to LibreOffice or document
+   # as a known platform-dependent step.
+   ```
+
+6. **Tear down**:
+   ```bash
+   docker compose --project-directory infrastructure down -v
+   rm infrastructure/.env
+   ```
+
+7. **Update PLAN.md + README.md**:
+   - Mark Phase 4 as **DONE**.
+   - Drop the "Phase 4 deferred" callout from README.
+   - Update status summary table.
+
+8. **Final commit + push** as M12.
+
+### Known issues to address in M12 if encountered
+
+- **`docx2pdf` may fail without MS Word** — script falls back to LibreOffice. If neither is installed on the test machine, document as a "user-side dependency" and proceed (not a code bug).
+- **Quality gate may FAIL on bullet count** — Jane's master-experience.yaml has 14 achievements total. With `min_bullets: 22` default, the tool will fill aggressively. If it can't reach 22 (because Jane only has 14), the gate FAILs on bullet_count. Either: (a) lower `min_bullets` in the test job YAML to 14, or (b) document as expected behaviour and PASS the WARN. Recommend (a) for the smoke test.
+- **NocoDB MCP not configured in test session** — that's fine; the smoke test exercises the Python tools directly via CLI, not via Claude Code MCP. The MCP integration is exercised separately via `/session-start`.
+
+### Optional in M12 (nice-to-have, not blocking)
+
+- Run `/session-start` in Claude Code with the live stack to verify the MCP integration works end-to-end (database connected, can list tables, etc.). This requires `~/.claude.json` configured with the local NocoDB token — non-trivial setup. Defer to a documentation-only validation if time-constrained.
+
+### Deferred from Phase 4 (not in M12 scope)
+
+- `tools/resume-tailor/recruiter-review.py` — LLM recruiter review using OpenRouter. Quality gate gracefully WARN-skips when missing. Add in a follow-up release.
+- `tools/resume-tailor/create-template.py` — variant scaffolding utility. Less critical than core flow.
+- The full Sia / employer-extension Python port. The README pattern doc shipped in M5 documents the pattern; users can build their own employer extensions with that as guidance. Per session direction.
+- n8n MCP integration. Per session direction (dropped entirely).
 
 ---
 
@@ -50,26 +143,99 @@ Output:
 
 Validation gate: rules and skills reference `config/*.yaml` paths instead of hardcoded values; fresh user can `cp config/*.example.yaml → config/*.yaml` and run skills with sane defaults.
 
-### Phase 4 — Port tools and infrastructure — DEFERRED
+### Phase 4 — Port tools and infrastructure — IN PROGRESS (M7-M11 done, M12 remaining)
 
-**Status**: deferred to a focused follow-up session. Reason: stateful, requires live testing with Docker, NocoDB, Python deps, and Playwright. Better as its own session than tacked onto the methodology port.
+**Status**: Phase 4 split into 6 milestones; M7-M11 shipped, M12 (smoke test + close-out) is the only remaining work. See "RESUME HERE" section above.
 
-When this session runs, it will port (with sanitisation):
-- `tools/resume-tailor/` — score, rewrite, generate `.docx` + PDF, quality gate.
-- `tools/job-search/` — JobSpy + custom search wrappers.
-- `tools/interview/` — `mock-interview.py`, `recruiter-review.py`, `run-mock-curl.sh`, generic role contexts.
-- `tools/bootstrap/` — multi-user onboarding bootstrap.
-- `tools/sia/` → `tools/employer-extension-example/` — fully sanitised port of the employer-extension pattern with placeholder names.
-- `tools/setup/init-nocodb.py` — fresh-install schema initialiser.
-- `tools/setup/first-run.py` — env / Docker / Chrome / MCP health check.
-- `infrastructure/docker-compose.yml`, `Caddyfile`, `init-db/01-create-databases.sql`, `init-db/02-jobhunt-schema.sql`, `infrastructure/.env.example`.
+#### M7 — Infrastructure + setup tools — DONE (commit `da89ad9`)
+Ported (sanitised):
+- `infrastructure/docker-compose.yml` — postgres + nocodb only by default; caddy as `--profile caddy` opt-in. Drop website + n8n services.
+- `infrastructure/Caddyfile` — env-var-driven NOCODB_DOMAIN (was hardcoded).
+- `infrastructure/init-db/01-create-databases.sql` — only nocodb metadata DB now.
+- `infrastructure/init-db/02-jobhunt-schema.sql` — 7-table schema (was 6). Adds `users` table + `user_id` FK on all data tables. Drops legacy `airtable_id` columns. Drops hardcoded CHECK constraints on industry / job_board / expansion_status (config-driven now).
+- `infrastructure/.env.example` — generic.
+- `tools/setup/init-nocodb.py` — NEW: discovers base id + 3 link-field IDs, writes to `.env`.
+- `tools/setup/first-run.py` — NEW: read-only health check.
 
-Drop:
-- `infrastructure/n8n-backup/` (n8n workflows from another project, not job-hunt).
-- `infrastructure/migration-data/*.json` (Airtable migration dumps with real records).
-- `infrastructure/migrate-airtable.py`, `tools/airtable-setup-applications.md`, `tools/migrate-file-structure.py` (one-time historical scripts).
+Dropped:
+- `infrastructure/n8n-backup/` (40 JSON files from a different project)
+- `infrastructure/migration-data/` (real Airtable PII)
+- `infrastructure/migrate-airtable.py` (one-time historical)
 
-Validation gate (when run): a user with a fresh NocoDB instance can run `python tools/setup/init-nocodb.py` and end up with a working schema; can run `tools/resume-tailor/tailor-resume.py` against the template YAML without errors.
+Validation: live test with `docker compose up -d` produced 7 tables, seed user, NocoDB reachable HTTP 200. Stack torn down `down -v` clean.
+
+#### M8 — Resume tailor tool — DONE (commit `b15eb7f`)
+Ported (sanitised):
+- `tools/resume-tailor/tailor-resume.py` — `--user` flag (was `--person`), JOB_HUNT_USER env fallback, removed hardcoded fallback skills, format-config per-user override.
+- `tools/resume-tailor/quality-gate.py` — `--user` flag, recruiter-review.py gracefully WARN-skips.
+- `tools/resume-tailor/generate-pdf.py` — docx2pdf primary, LibreOffice fallback.
+- `tools/resume-tailor/generate-cover-letter-pdf.py` — drop hardcoded ALEX_DEFAULTS, reads from user-config.yaml.
+- `tools/resume-tailor/format-config.yaml` — per-user-overridable.
+- `tools/resume-tailor/jobs/_template.yaml` — annotated job-posting YAML.
+
+Restructured Jane Demo data to canonical shape (contact + summary_variants for 7 variant keys + experience with title_variants / achievements with full metadata + education + certifications). 14 achievements across 5 fictional companies.
+
+Added `applications/resumes/data/role-type-schemas.yaml` global fallback (empty achievement_ids lists; users populate from their gap-analysis).
+
+Skipped (deferred):
+- `recruiter-review.py` (OpenRouter LLM dependency)
+- `create-template.py` (variant scaffolding utility)
+- `build-jessi-resume.py` (personal-name-leaky, dropped)
+
+Validation: `tailor-resume.py --scoring-only --user jane-demo` produces correct JSON with sensible scores (10/10 on top bullets matching JD requirements).
+
+#### M9 — Job search tool — DONE (commit `ca1452b`)
+Ported (sanitised):
+- `tools/job-search/search-jobs.py` — full rewrite. Now reads target_roles[], target_regions[], target_industries[] from config/*.yaml at runtime instead of hardcoded GCC keyword maps. DEFAULT_CITY_COUNTRY_MAP spans 40+ global cities.
+- `tools/job-search/sample-job-posting.yaml` — fictional Solaris Demoland example (was ADNOC / Abu Dhabi / oil-gas).
+
+Dropped:
+- 15+ `search*-results.json` and `fresh*-results.json` files (real PII)
+- `search*-stderr.txt` log files
+
+Validation: Python syntax OK; module imports cleanly.
+
+#### M10 — Interview + transcription tools — DONE (commit `e6d0b9a`)
+Ported (sanitised):
+- `tools/interview/mock-interview.py` — replaced hardcoded AESO/Suha/Alex Monegro context with a generic recruiter persona. Candidate context loaded from per-user `recruiter-context.yaml` + `user-config.yaml` via `--user`. Default model: `google/gemini-3-flash-preview`. Removed model-pricing-rates dict.
+- `tools/interview/contexts/program-manager-energy.txt` — NEW generic role context.
+- `tools/interview/contexts/product-manager-saas.txt` — NEW.
+- `tools/interview/contexts/ai-product-manager.txt` — NEW.
+- `tools/transcribe_meeting.py` — CLI-driven (was hardcoded path). Platform-aware ffmpeg lookup.
+- `tools/colab-whisper.py` — comments cleaned up.
+
+Dropped:
+- `tools/interview/contexts/inter-pipeline.txt` (real company)
+- `tools/interview/contexts/sia-partners.txt` (real employer)
+- `tools/interview/contexts/aeso.txt` (real ISO + interviewer)
+- `tools/interview/run-mock-curl.sh` (referenced blackhillslabs.com + leaked tools/.env)
+- `tools/whisper-setup.md` (covered by VIDEO-TRANSCRIPTION-ANALYSIS-PROCEDURE.md)
+- `tools/transform_skills.py`, `tools/airtable-setup-applications.md`, `tools/migrate-file-structure.py` (historical migrations)
+- `tools/.env` (real tokens)
+
+Validation: Python syntax OK on all 3 scripts.
+
+#### M11 — Bootstrap docs (sanitised) — DONE (commit `8767916`)
+Ported (sanitised):
+- `tools/bootstrap/BOOTSTRAP.md` — 10-phase new-machine setup walkthrough. Reframed from "share Alex's shared infrastructure" to "set up your own job-hunt system". Detailed troubleshooting.
+- `tools/bootstrap/bootstrap-prompt.md` — paste-ready Claude Code prompt.
+
+Sanitised — removed 5 leaked secrets:
+- NocoDB token `FOfjXH...`
+- GitHub PAT `ghp_oFZAVl...`
+- Hunter.io key `fa561f18...`
+- Lusha key `9133b876...`
+- n8n JWT `eyJhbGc...`
+
+All replaced with placeholders. Real domains (`db.blackhillslabs.com`, `n8n.blackhillslabs.com`) replaced with NOCODB_URL env-var pattern. Tailscale IP `100.102.50.46` dropped. "Alex Monegro" / "alexmonegrop" → "the system owner" / "<your-org>". BlackHills MCP names → generic names.
+
+Per session direction: dropped n8n MCP entry entirely; dropped Sia tool port entirely (README pattern doc in M5 stays as guidance only).
+
+Validation: forbidden-token grep on tools/bootstrap/: zero hits across 40+ patterns.
+
+#### M12 — Integration smoke test + close-out — REMAINING
+
+See "RESUME HERE" section at the top of this file.
 
 ### Phase 5 — Port operating procedures + reference templates — DONE
 

@@ -27,9 +27,13 @@ All seven phases are complete. The v1 template is operational end-to-end:
   - `docker-compose.yml` now sets `NC_ALLOW_LOCAL_EXTERNAL_DBS=true` so NocoDB doesn't reject the Docker-internal `postgres` hostname with "Forbidden host name or IP address".
   - `_template.yaml` surfaces the `min_bullets` and `hard_fail_min_bullets` overrides.
 
-### Deferred from Phase 4 (still deferred — not blocking v1)
+### M13 close-out (2026-05-06, follow-up to v1)
 
-- `tools/resume-tailor/recruiter-review.py` — LLM recruiter review via OpenRouter. Quality gate WARN-skips when missing. Worth adding in a follow-up release.
+- **`tools/resume-tailor/recruiter-review.py` shipped.** Independent LLM recruiter review via OpenRouter — emits the JSON contract that `quality-gate.py` already consumes (`verdict: PASS|FAIL|SKIP`, `issues[].severity: blocking|advisory`). Default model `anthropic/claude-sonnet-4-6`, overridable via `RECRUITER_REVIEW_MODEL` env. SKIPs cleanly (no FAIL) when `OPENROUTER_API_KEY` is unset or the API is unreachable.
+- **Smoke test confirmed WARN → PASS**: re-running the M12 jane-demo gate without the key gives `8 PASS, 1 WARN (recruiter_review SKIP)`; with the key set, `9 PASS, 0 WARN, 0 FAIL`. The previously-deferred WARN is gone.
+
+### Still deferred (not blocking v1)
+
 - `tools/resume-tailor/create-template.py` — variant scaffolding utility. Less critical than the core flow.
 - The full Sia / employer-extension Python port. The README pattern doc in M5 documents the pattern; users build their own employer extensions with that as guidance. Per session direction.
 - n8n MCP integration. Per session direction (dropped entirely).

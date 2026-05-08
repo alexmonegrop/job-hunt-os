@@ -66,12 +66,28 @@ cp .env.example .env                      # set POSTGRES_PASSWORD (e.g. `openssl
 docker compose up -d                      # postgres + nocodb
 ```
 
-Wait ~30s for the NocoDB healthcheck. Then at `http://localhost:8080`:
+Wait ~30s for the NocoDB healthcheck. Then choose **one** of the two paths below.
+
+### Option A — One-shot (recommended for local dev)
+
+Skip the UI entirely. Step 5 runs admin signup + token minting via API:
+
+```bash
+python tools/setup/init-nocodb.py --auto-bootstrap
+```
+
+The script signs up `admin@local.test` with a freshly-generated 32-byte URL-safe password (overridable via `--admin-email` / `--admin-password`, or `NOCODB_ADMIN_EMAIL` / `NOCODB_ADMIN_PASSWORD` in `.env`), mints a 40-char PAT, and writes all three back to `.env`. If an admin already exists it falls back to signin — re-running is idempotent.
+
+### Option B — Manual UI
+
+If you want to set your own admin email or click around first, do it via the UI at `http://localhost:8080`:
 
 1. **Create the admin user** (any email/password — local-only).
 2. **Account → Tokens → + New** → copy the token into the root `.env` as `NOCODB_API_TOKEN`.
 
-That's it. `tools/setup/init-nocodb.py` (next step) auto-creates the JobHunt base by reading `POSTGRES_PASSWORD` from `infrastructure/.env` — no UI plumbing needed.
+Then run `python tools/setup/init-nocodb.py` (no flag).
+
+Either way, `tools/setup/init-nocodb.py` auto-creates the JobHunt base by reading `POSTGRES_PASSWORD` from `infrastructure/.env` — no UI plumbing needed.
 
 > **"Forbidden host name or IP address"** if you ever rebuild the data source manually means NocoDB is enforcing SSRF protection against internal hostnames. The shipped `docker-compose.yml` sets `NC_ALLOW_LOCAL_EXTERNAL_DBS=true` to permit the Docker-internal `postgres` host; the auto-create flow needs this too. If you removed it, add it back and recreate the nocodb container (`docker compose up -d --no-deps nocodb`).
 

@@ -1,41 +1,42 @@
-"""init-nocodb.py — discover NocoDB base id + link-field ids and write to .env.
+"""init-nocodb.py — bootstrap NocoDB + discover base id + link-field ids.
 
-Run after `docker compose up -d` and after NocoDB has discovered the postgres
-`jobhunt` database as a Data Source. This script does NOT create the schema —
-the schema is created by `infrastructure/init-db/02-jobhunt-schema.sql` when
-postgres first boots.
+Run after `docker compose up -d`. With `--auto-bootstrap`, this is a single-
+command setup: admin user, API token, JobHunt base, and link-field discovery
+all happen via API. Without the flag, the script expects you to have already
+created an admin and pasted a PAT into .env.
 
-What it does:
+The schema itself is created by `infrastructure/init-db/02-jobhunt-schema.sql`
+when postgres first boots — this script never runs DDL.
+
+Modes:
+  - Default: requires NOCODB_API_TOKEN to be set in .env. Discovers the
+    JobHunt base (auto-creates it if postgres creds are available) and link
+    fields, writes ids to .env.
+  - --auto-bootstrap: if NOCODB_API_TOKEN is empty, signs up an admin
+    (or signs in if one already exists) and generates a PAT before doing
+    the rest. Writes admin email/password and PAT back to .env.
+
+What it does (after any bootstrap):
   1. Reads NOCODB_URL and NOCODB_API_TOKEN from the project .env.
-  2. Queries the NocoDB v2 meta API to find the base containing the
-     job-hunt-os tables (target_companies, target_contacts, etc.).
+  2. Queries the NocoDB v2 meta API to find the base containing the 7
+     job-hunt-os tables (auto-creates the base from infrastructure/.env
+     postgres creds if missing).
   3. Queries each table's columns to find the LinkToAnotherRecord field ids
      used for FK linking via the v3 Link API (see
      .claude/rules/01-database-standards.md Rule 8).
-  4. Writes NOCODB_BASE_ID and link-field ids back to the .env at the
-     repo root.
-
-Manual prerequisites:
-  - `docker compose up -d` has run successfully.
-  - You have logged into NocoDB at http://localhost:8080 and created an
-    admin user.
-  - You have generated an API token at Account -> Tokens and pasted it into
-    the project .env as NOCODB_API_TOKEN.
-  - You have added the postgres `jobhunt` database as a Data Source inside
-    NocoDB (Settings -> Data Sources -> + New). Connection details:
-      host: postgres (or localhost if running outside the Docker network)
-      port: 5432
-      user: jobhunt
-      password: <POSTGRES_PASSWORD from infrastructure/.env>
-      database: jobhunt
-  - NocoDB has discovered all 7 tables.
+  4. Writes NOCODB_BASE_ID and link-field ids back to the .env.
 
 Usage:
-  python tools/setup/init-nocodb.py
+  python tools/setup/init-nocodb.py                    # existing flow
+  python tools/setup/init-nocodb.py --auto-bootstrap   # one-shot setup
+  python tools/setup/init-nocodb.py --auto-bootstrap \\
+      --admin-email me@local.test --admin-password '<your-password>'
 """
 from __future__ import annotations
 
+import argparse
 import os
+import secrets
 import sys
 from pathlib import Path
 from typing import Iterable
@@ -114,6 +115,60 @@ def api_get(url: str, token: str) -> dict:
     r = requests.get(url, headers={"xc-token": token}, timeout=30)
     r.raise_for_status()
     return r.json()
+
+
+def auto_bootstrap_admin(nocodb_url: str, admin_email: str,
+                         admin_password: str) -> str:
+    """Sign up a fresh admin (or sign in if already present), then mint a PAT.
+
+    Returns the 40-char personal access token. Writes nothing — caller persists
+    creds + token to .env.
+
+    NocoDB 2026.04 endpoints used:
+      POST /api/v1/auth/user/signup  — first call only; subsequent calls 401
+      POST /api/v1/auth/user/signin  — fallback when signup fails
+      POST /api/v1/tokens            — auth via JWT in xc-auth header
+    """
+    base = nocodb_url.rstrip("/")
+    payload = {"email": admin_email, "password": admin_password}
+
+    jwt: str | None = None
+    r = requests.post(f"{base}/api/v1/auth/user/signup", json=payload, timeout=30)
+    if r.ok:
+        jwt = r.json().get("token")
+        action = "signup"
+    else:
+        # Fall back to signin: admin already exists from a prior bootstrap.
+        r2 = requests.post(f"{base}/api/v1/auth/user/signin", json=payload, timeout=30)
+        if r2.ok:
+            jwt = r2.json().get("token")
+            action = "signin"
+        else:
+            sys.exit(
+                f"Auto-bootstrap failed. Signup: {r.status_code} {r.text[:200]} "
+                f"| Signin: {r2.status_code} {r2.text[:200]}. "
+                "If you've already initialised NocoDB with a different admin, "
+                "pass --admin-email and --admin-password matching that account."
+            )
+
+    if not jwt:
+        sys.exit("Auto-bootstrap got no JWT from signup/signin response.")
+
+    print(f"  Bootstrap: {action} OK as {admin_email}")
+
+    rt = requests.post(
+        f"{base}/api/v1/tokens",
+        headers={"xc-auth": jwt, "Content-Type": "application/json"},
+        json={"description": "job-hunt-os auto-bootstrap"},
+        timeout=30,
+    )
+    if not rt.ok:
+        sys.exit(f"Token creation failed: {rt.status_code} {rt.text[:200]}")
+    pat = rt.json().get("token")
+    if not pat or len(pat) < 30:
+        sys.exit(f"Token creation returned unexpected payload: {rt.text[:200]}")
+    print(f"  Bootstrap: minted PAT ({len(pat)} chars)")
+    return pat
 
 
 def list_all_bases(nocodb_url: str, token: str) -> list[dict]:
@@ -254,17 +309,65 @@ def find_link_field_id(table_info: dict, target_table_name: str) -> str | None:
     return None
 
 
-def main() -> int:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        prog="init-nocodb.py",
+        description="Bootstrap NocoDB and discover base + link-field ids.",
+    )
+    p.add_argument(
+        "--auto-bootstrap",
+        action="store_true",
+        help="If NOCODB_API_TOKEN is empty, sign up admin (or sign in) and "
+             "mint a PAT via API before discovery. Writes creds + PAT to .env.",
+    )
+    p.add_argument(
+        "--admin-email",
+        default=None,
+        help="Admin email for auto-bootstrap. Defaults to NOCODB_ADMIN_EMAIL "
+             "from .env, or 'admin@local.test' if unset.",
+    )
+    p.add_argument(
+        "--admin-password",
+        default=None,
+        help="Admin password for auto-bootstrap. Defaults to NOCODB_ADMIN_PASSWORD "
+             "from .env, or a freshly-generated 32-byte URL-safe token.",
+    )
+    return p.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+
     root = repo_root()
     env_path = root / ".env"
     env = load_env(env_path)
 
     nocodb_url = env.get("NOCODB_URL", "http://localhost:8080")
     token = env.get("NOCODB_API_TOKEN", "").strip()
+
+    if not token and args.auto_bootstrap:
+        admin_email = (
+            args.admin_email
+            or env.get("NOCODB_ADMIN_EMAIL")
+            or "admin@local.test"
+        )
+        admin_password = (
+            args.admin_password
+            or env.get("NOCODB_ADMIN_PASSWORD")
+            or secrets.token_urlsafe(32)
+        )
+        print(f"Auto-bootstrapping NocoDB at {nocodb_url}...")
+        token = auto_bootstrap_admin(nocodb_url, admin_email, admin_password)
+        write_env_var(env_path, "NOCODB_ADMIN_EMAIL", admin_email)
+        write_env_var(env_path, "NOCODB_ADMIN_PASSWORD", admin_password)
+        write_env_var(env_path, "NOCODB_API_TOKEN", token)
+        env["NOCODB_API_TOKEN"] = token
+
     if not token:
         sys.exit(
             "NOCODB_API_TOKEN is empty in .env. "
-            "Generate a token in NocoDB at Account -> Tokens and paste it in."
+            "Either generate a token in NocoDB at Account -> Tokens and paste "
+            "it in, or re-run with --auto-bootstrap to do it via API."
         )
 
     print(f"Connecting to NocoDB at {nocodb_url}...")
@@ -321,4 +424,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main())  # type: ignore[func-returns-value]

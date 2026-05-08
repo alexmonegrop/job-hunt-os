@@ -32,6 +32,20 @@ All seven phases are complete. The v1 template is operational end-to-end:
 - **`tools/resume-tailor/recruiter-review.py` shipped.** Independent LLM recruiter review via OpenRouter — emits the JSON contract that `quality-gate.py` already consumes (`verdict: PASS|FAIL|SKIP`, `issues[].severity: blocking|advisory`). Default model `anthropic/claude-sonnet-4-6`, overridable via `RECRUITER_REVIEW_MODEL` env. SKIPs cleanly (no FAIL) when `OPENROUTER_API_KEY` is unset or the API is unreachable.
 - **Smoke test confirmed WARN → PASS**: re-running the M12 jane-demo gate without the key gives `8 PASS, 1 WARN (recruiter_review SKIP)`; with the key set, `9 PASS, 0 WARN, 0 FAIL`. The previously-deferred WARN is gone.
 
+### M14 close-out (2026-05-07, setup ergonomics)
+
+- **`init-nocodb.py --auto-bootstrap` shipped.** Folds admin signup + PAT minting into the existing init script via NocoDB's `/api/v1/auth/user/signup` + `/api/v1/tokens` endpoints. Idempotent: if an admin already exists, signup 401s and the script falls back to signin with the same creds. Writes `NOCODB_ADMIN_EMAIL`, `NOCODB_ADMIN_PASSWORD`, and `NOCODB_API_TOKEN` back to `.env` so subsequent runs skip the bootstrap step.
+- **Setup ergonomics**: cuts new-user setup from ~3 min of UI clicks (sign up, navigate Account → Tokens, generate, paste) to a single `python tools/setup/init-nocodb.py --auto-bootstrap` command (~5 sec).
+- **Validated end-to-end against the live stack**: PAT-set path is a no-op (regression check); signin path mints a fresh 40-char PAT that returns HTTP 200 against `/api/v2/meta/bases/.../tables`.
+- `docs/SETUP.md` Step 4 now presents Option A (auto-bootstrap, recommended) vs Option B (manual UI) with both paths explained.
+
+### Repo polish (2026-05-07)
+
+- GitHub repo marked as **Template Repository**; description set; topics added (`job-hunt`, `claude-code`, `nocodb`, `resume-tailoring`, `automation`, `agentic-workflows`, `template-repository`).
+- `jane-demo` user record seeded into the live local NocoDB (id=2), so demo skills can resolve `JOB_HUNT_USER=jane-demo` against the database.
+- `~/.claude.json` for `job-hunt-os` project: `context7` + `playwright` MCPs added alongside `nocodb`.
+- `.claude/settings.local.json` (gitignored) populated with scoped Bash permission rules for routine GitHub/Docker/git/python ops on this repo, so per-action confirmation isn't needed for already-trusted workflows.
+
 ### Still deferred (not blocking v1)
 
 - `tools/resume-tailor/create-template.py` — variant scaffolding utility. Less critical than the core flow.
@@ -40,8 +54,8 @@ All seven phases are complete. The v1 template is operational end-to-end:
 
 ### Optional follow-up (not in v1 scope)
 
-- `/session-start` MCP integration end-to-end test against a live local stack. Requires `~/.claude.json` configured with the local NocoDB token — non-trivial setup; deferred to documentation-only validation.
-- Mark the GitHub repo as a Template Repository, add description/topics, pin to profile (UI-only actions).
+- `/session-start` MCP integration end-to-end test against a live local stack. **DONE 2026-05-07**: live NocoDB MCP returns all 7 tables in this session's `/session-start`; recovered after a Docker restart timing race.
+- Mark the GitHub repo as a Template Repository, add description/topics, pin to profile. **DONE 2026-05-07** (template + topics; pin-to-profile is UI-only on the user's profile page).
 
 ---
 

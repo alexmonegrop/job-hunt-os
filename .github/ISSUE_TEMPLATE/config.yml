@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Setup question / general help
+    url: https://github.com/alexmonegrop/job-hunt-os/discussions
+    about: For "how do I…" questions about setup, customisation, MCP wiring, or running the pipeline, please open a Discussion instead of an issue.
+  - name: Documentation
+    url: https://github.com/alexmonegrop/job-hunt-os/tree/main/docs
+    about: Setup, customisation, architecture, examples, extending, multi-user, contributing — all in /docs.

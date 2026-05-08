@@ -1,0 +1,46 @@
+name: Feature request
+description: Propose a new rule, skill, tool, or doc — or an extension to an existing one.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. The system is opinionated by design — see `docs/EXTEND.md` for the fork-vs-PR decision tree.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve
+      description: The job-hunt situation or workflow gap that motivated this.
+      placeholder: e.g. I want to track outreach across multiple regions per applicant, and the current contact-population skill doesn't differentiate.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Concrete changes to rules / skills / tools / docs.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else could solve this — and why isn't it good enough?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Where does this change live?
+      options:
+        - Core (changes the template's default behaviour)
+        - Optional / opt-in (behind a config flag)
+        - Documentation only
+        - Better as a fork (employer-specific, region-specific, or wildly opinionated)
+    validations:
+      required: true

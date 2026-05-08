@@ -1,0 +1,73 @@
+name: Bug report
+description: Report a defect in a rule, skill, tool, or doc.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Before submitting, please confirm:
+        - You've read the relevant doc in `/docs` (SETUP, CUSTOMIZE, ARCHITECTURE, etc.).
+        - You've tried the troubleshooting section of `docs/SETUP.md`.
+        - The bug is reproducible — not a one-off transient.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What went wrong
+      description: A clear, concrete description of the bug.
+      placeholder: e.g. `python tools/setup/init-nocodb.py --auto-bootstrap` returned a 401 against /api/v1/tokens even though signup succeeded.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The exact sequence to trigger the bug.
+      placeholder: |
+        1. `docker compose up -d` from `infrastructure/`
+        2. `python tools/setup/init-nocodb.py --auto-bootstrap`
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should have happened instead.
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS / shell
+      placeholder: macOS 14, zsh / Windows 11, PowerShell / Ubuntu 22.04, bash
+    validations:
+      required: true
+
+  - type: input
+    id: claude-code-version
+    attributes:
+      label: Claude Code version (if relevant)
+      placeholder: claude --version
+    validations:
+      required: false
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version (if a Python tool failed)
+      placeholder: python --version
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Paste the failing output (terminal, NocoDB UI error, MCP tool error). **Strip any tokens, passwords, or PII first.**
+      render: shell
+    validations:
+      required: false
